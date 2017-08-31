@@ -14,6 +14,7 @@ setup(
     install_requires=[
         'keras',
         'h5py',
+        'Pillow',
         'ml-tools',
     ]
 )
