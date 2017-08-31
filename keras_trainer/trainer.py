@@ -52,18 +52,20 @@ class Trainer(object):
             preprocessing_function=self.model_spec.preprocess_input
         )
 
-        train_gen = train_generator.flow_from_directory(self.train_dataset_dir,
-                                                        batch_size=self.batch_size,
-                                                        target_size=self.model_spec.target_size[:2],
-                                                        class_mode='categorical'
-                                                        )
+        train_gen = train_generator.flow_from_directory(
+            self.train_dataset_dir,
+            batch_size=self.batch_size,
+            target_size=self.model_spec.target_size[:2],
+            class_mode='categorical'
+        )
 
-        val_gen = val_generator.flow_from_directory(self.val_dataset_dir,
-                                                    batch_size=self.batch_size,
-                                                    target_size=self.model_spec.target_size[:2],
-                                                    class_mode='categorical',
-                                                    shuffle=False
-                                                    )
+        val_gen = val_generator.flow_from_directory(
+            self.val_dataset_dir,
+            batch_size=self.batch_size,
+            target_size=self.model_spec.target_size[:2],
+            class_mode='categorical',
+            shuffle=False
+        )
 
         model = self.model_spec.klass(
             self.model_spec.target_size,
@@ -112,13 +114,14 @@ class Trainer(object):
             metrics=['accuracy']
         )
 
-        model.fit_generator(train_gen,
-                            verbose=1,
-                            steps_per_epoch=train_gen.samples // self.batch_size,
-                            epochs=self.epochs,
-                            callbacks=[tensorboard, checkpoint],
-                            validation_data=val_gen,
-                            validation_steps=val_gen.samples // self.batch_size
-                            )
+        model.fit_generator(
+            train_gen,
+            verbose=1,
+            steps_per_epoch=train_gen.samples // self.batch_size,
+            epochs=self.epochs,
+            callbacks=[tensorboard, checkpoint],
+            validation_data=val_gen,
+            validation_steps=val_gen.samples // self.batch_size
+        )
 
         model.save(os.path.join(self.output_model_dir, 'final.hdf5'))
