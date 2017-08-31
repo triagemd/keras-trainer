@@ -48,7 +48,7 @@ def test_mobilenet_v1_on_catdog_datasets(catdog_dictionary, catdog_train_dataset
     trainer.run()
 
     actual = list_files(output_model_dir, relative=True)
-    assert actual == ['best.hdf5', 'final.hdf5']
+    assert sorted(actual) == sorted(['best.hdf5', 'final.hdf5'])
 
     actual = list_files(output_logs_dir, relative=True)
     assert len(actual) == 2
