@@ -29,6 +29,10 @@ class Trainer(object):
         self.val_dataset_dir = val_dataset_dir
         self.output_model_dir = output_model_dir
         self.output_logs_dir = output_logs_dir
+        self.train_generator = options.pop('train_generator', None)
+        self.val_generator = options.pop('val_generator', None)
+        self.top_layers = options.pop('top_layers', None)
+        self.optimizer = options.pop('optimizer', None)
         for key, option in self.OPTIONS.items():
             if key not in options and 'default' not in option:
                 raise ValueError('missing required option %s' % (key, ))
@@ -36,7 +40,7 @@ class Trainer(object):
             setattr(self, key, value)
 
     def run(self):
-        train_generator = image.ImageDataGenerator(
+        train_generator = self.train_generator or image.ImageDataGenerator(
             rotation_range=180,
             width_shift_range=0,
             height_shift_range=0,
@@ -48,7 +52,7 @@ class Trainer(object):
             fill_mode='nearest'
         )
 
-        val_generator = image.ImageDataGenerator(
+        val_generator = self.val_generator or image.ImageDataGenerator(
             preprocessing_function=self.model_spec.preprocess_input
         )
 
@@ -75,13 +79,14 @@ class Trainer(object):
             pooling=self.pooling
         )
 
-        layer = Dense(len(self.dictionary), name='dense')(model.output)
-        layer = Activation('softmax', name='act_softmax')(layer)
-        model = Model(model.input, layer)
+        if self.top_layers is None:
+            layer = Dense(len(self.dictionary), name='dense')(model.output)
+            self.top_layers = Activation('softmax', name='act_softmax')(layer)
+        model = Model(model.input, self.top_layers)
 
         model.summary()
 
-        optimizer = optimizers.SGD(
+        optimizer = self.optimizer or optimizers.SGD(
             lr=self.sgd_lr,
             decay=self.decay,
             momentum=self.momentum,
