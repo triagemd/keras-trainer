@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='keras-trainer',
-    version='0.0.2',
+    version='0.0.3',
     description='A training abstraction for Keras models.',
     author='Triage Technologies Inc.',
     author_email='ai@triage.com',
@@ -15,6 +15,6 @@ setup(
         'keras',
         'h5py',
         'Pillow',
-        'ml-tools',
+        'keras-model-specs',
     ]
 )

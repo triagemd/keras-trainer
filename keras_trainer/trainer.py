@@ -5,8 +5,7 @@ from keras.models import Model
 from keras.layers import Dense, Activation
 from keras.preprocessing import image
 from keras.callbacks import TensorBoard, ModelCheckpoint
-
-from ml_tools import get_model_spec
+from keras_model_specs import ModelSpec
 
 
 class Trainer(object):
@@ -23,7 +22,7 @@ class Trainer(object):
     }
 
     def __init__(self, model_spec, dictionary, train_dataset_dir, val_dataset_dir, output_model_dir, output_logs_dir, **options):
-        self.model_spec = get_model_spec(model_spec)
+        self.model_spec = ModelSpec.get(model_spec)
         self.dictionary = dictionary
         self.train_dataset_dir = train_dataset_dir
         self.val_dataset_dir = val_dataset_dir
