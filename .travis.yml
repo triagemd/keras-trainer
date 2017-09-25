@@ -1,9 +1,4 @@
-sudo: required
-
 language: python
-
-services:
-  - docker
 
 python:
   - 2.7
@@ -14,3 +9,8 @@ before_install:
 
 script:
   - script/test
+
+after_success:
+  - if [ "$TRAVIS_PYTHON_VERSION" == "2.7" && "$TRAVIS_BRANCH" == "master" && "$TRAVIS_PULL_REQUEST" = "false" ]; then
+      script/distribute;
+    fi
