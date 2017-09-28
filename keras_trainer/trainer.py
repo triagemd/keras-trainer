@@ -137,7 +137,7 @@ class Trainer(object):
             validation_data=val_gen,
             validation_steps=val_gen.samples // self.batch_size,
             workers=self.workers,
-            class_weights=self.class_weights,
+            class_weight=self.class_weights,
             max_queue_size=self.max_queue_size
         )
 
