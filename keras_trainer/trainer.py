@@ -19,6 +19,7 @@ class Trainer(object):
         'sgd_lr': {'type': float, 'default': 0.01},
         'pooling': {'type': str, 'default': 'avg'},
         'weights': {'type': str, 'default': 'imagenet'},
+        'workers': {'type': int, 'default': 1}
     }
 
     def __init__(self, model_spec, dictionary, train_dataset_dir, val_dataset_dir, output_model_dir, output_logs_dir, **options):
@@ -33,6 +34,9 @@ class Trainer(object):
         self.top_layers = options.pop('top_layers', None)
         self.optimizer = options.pop('optimizer', None)
         self.callback_list = options.pop('callback_list', list())
+        self.class_weights = options.pop('class_weights', None)
+        self.loss_function = options.pop('loss_function', 'categorical_crossentropy')
+        self.metrics = options.pop('metrics', ['accuracy'])
 
         for key, option in self.OPTIONS.items():
             if key not in options and 'default' not in option:
@@ -119,8 +123,8 @@ class Trainer(object):
 
         model.compile(
             optimizer=optimizer,
-            loss='categorical_crossentropy',
-            metrics=['accuracy']
+            loss=self.loss_function,
+            metrics=self.metrics
         )
 
         model.fit_generator(
@@ -130,7 +134,9 @@ class Trainer(object):
             epochs=self.epochs,
             callbacks=self.callback_list,
             validation_data=val_gen,
-            validation_steps=val_gen.samples // self.batch_size
+            validation_steps=val_gen.samples // self.batch_size,
+            workers=self.workers,
+            class_weights=self.class_weights
         )
 
         model.save(os.path.join(self.output_model_dir, 'final.hdf5'))
