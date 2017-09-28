@@ -32,6 +32,8 @@ class Trainer(object):
         self.val_generator = options.pop('val_generator', None)
         self.top_layers = options.pop('top_layers', None)
         self.optimizer = options.pop('optimizer', None)
+        self.callback_list = options.pop('callback_list', list())
+
         for key, option in self.OPTIONS.items():
             if key not in options and 'default' not in option:
                 raise ValueError('missing required option %s' % (key, ))
@@ -104,6 +106,8 @@ class Trainer(object):
             mode='max'
         )
 
+        self.callback_list.append(checkpoint)
+
         tensorboard = TensorBoard(
             log_dir=self.output_logs_dir,
             histogram_freq=0,
@@ -111,6 +115,7 @@ class Trainer(object):
             write_images=True
         )
         tensorboard.set_model(model)
+        self.callback_list.append(tensorboard)
 
         model.compile(
             optimizer=optimizer,
@@ -123,7 +128,7 @@ class Trainer(object):
             verbose=1,
             steps_per_epoch=train_gen.samples // self.batch_size,
             epochs=self.epochs,
-            callbacks=[tensorboard, checkpoint],
+            callbacks=self.callback_list,
             validation_data=val_gen,
             validation_steps=val_gen.samples // self.batch_size
         )
