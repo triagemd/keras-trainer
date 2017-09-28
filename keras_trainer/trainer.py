@@ -19,7 +19,8 @@ class Trainer(object):
         'sgd_lr': {'type': float, 'default': 0.01},
         'pooling': {'type': str, 'default': 'avg'},
         'weights': {'type': str, 'default': 'imagenet'},
-        'workers': {'type': int, 'default': 1}
+        'workers': {'type': int, 'default': 1},
+        'max_queue_size': {'type': int, 'default': 16}
     }
 
     def __init__(self, model_spec, dictionary, train_dataset_dir, val_dataset_dir, output_model_dir, output_logs_dir, **options):
@@ -136,7 +137,8 @@ class Trainer(object):
             validation_data=val_gen,
             validation_steps=val_gen.samples // self.batch_size,
             workers=self.workers,
-            class_weights=self.class_weights
+            class_weights=self.class_weights,
+            max_queue_size=self.max_queue_size
         )
 
         model.save(os.path.join(self.output_model_dir, 'final.hdf5'))
