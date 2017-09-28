@@ -34,7 +34,7 @@ class Trainer(object):
         self.val_generator = options.pop('val_generator', None)
         self.top_layers = options.pop('top_layers', None)
         self.optimizer = options.pop('optimizer', None)
-        self.callback_list = options.pop('callback_list', list())
+        self.callback_list = options.pop('callback_list', [])
         self.class_weights = options.pop('class_weights', None)
         self.loss_function = options.pop('loss_function', 'categorical_crossentropy')
         self.metrics = options.pop('metrics', ['accuracy'])
