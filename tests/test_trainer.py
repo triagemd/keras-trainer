@@ -34,14 +34,36 @@ def output_logs_dir():
         yield temp_dir
 
 
-def test_mobilenet_v1_on_catdog_datasets(catdog_dictionary, catdog_train_dataset_dir, catdog_val_dataset_dir, output_model_dir, output_logs_dir):
+def test_resnet50_on_catdog_datasets(catdog_dictionary, catdog_train_dataset_dir, catdog_val_dataset_dir, output_model_dir, output_logs_dir):
     trainer = Trainer(
-        'mobilenet_v1',
-        catdog_dictionary,
+        ModelSpec.get('resnet50', preprocess_args=[1, 2, 3]),
         catdog_train_dataset_dir,
         catdog_val_dataset_dir,
         output_model_dir,
         output_logs_dir,
+        num_classes=len(catdog_dictionary),
+        epochs=1,
+        batch_size=1,
+    )
+    trainer.run()
+
+    actual = list_files(output_model_dir, relative=True)
+    assert sorted(actual) == sorted(['best.hdf5', 'final.hdf5'])
+
+    actual = list_files(output_logs_dir, relative=True)
+    assert len(actual) == 2
+    for path in actual:
+        assert path.startswith('events.out.tfevents.')
+
+
+def test_mobilenet_v1_on_catdog_datasets(catdog_dictionary, catdog_train_dataset_dir, catdog_val_dataset_dir, output_model_dir, output_logs_dir):
+    trainer = Trainer(
+        'mobilenet_v1',
+        catdog_train_dataset_dir,
+        catdog_val_dataset_dir,
+        output_model_dir,
+        output_logs_dir,
+        num_classes=len(catdog_dictionary),
         epochs=1,
         batch_size=1,
     )
@@ -66,11 +88,11 @@ def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override(catdog_diction
     )
     trainer = Trainer(
         model_spec,
-        catdog_dictionary,
         catdog_train_dataset_dir,
         catdog_val_dataset_dir,
         output_model_dir,
         output_logs_dir,
+        num_classes=len(catdog_dictionary),
         epochs=1,
         batch_size=1,
     )
