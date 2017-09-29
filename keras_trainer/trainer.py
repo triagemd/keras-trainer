@@ -22,7 +22,8 @@ class Trainer(object):
         'workers': {'type': int, 'default': 1},
         'max_queue_size': {'type': int, 'default': 16},
         'num_classes': {'type': int, 'default': None},
-        'verbose': {'type': str, 'default': False}
+        'verbose': {'type': str, 'default': False},
+        'model_kwargs': {'type': dict, 'default': {}}
     }
 
     def __init__(self, model_spec, train_dataset_dir, val_dataset_dir, output_model_dir, output_logs_dir, **options):
@@ -86,20 +87,21 @@ class Trainer(object):
         # Initialize the model instance.
         if self.model_spec.klass == MobileNet:
             # Initialize the base with valid target_size.
-            model = self.model_spec.klass(
-                input_shape=(224, 224, 3),
-                weights=self.weights,
-                include_top=False,
-                pooling=self.pooling
-            )
+            model_kwargs = {
+                'input_shape': (224, 224, 3),
+                'weights': self.weights,
+                'include_top': False,
+                'pooling': self.pooling
+            }
+            model_kwargs.update(self.model_kwargs)
+            model = self.model_spec.klass(**model_kwargs)
 
             # Expand the base model to match the spec target_size.
-            expanded_model = self.model_spec.klass(
-                input_shape=self.model_spec.target_size,
-                include_top=False,
-                pooling=self.pooling,
-                weights=None
-            )
+            model_kwargs.update({
+                'input_shape': self.model_spec.target_size,
+                'weights': None
+            })
+            expanded_model = self.model_spec.klass(**model_kwargs)
             for i in range(1, len(expanded_model.layers)):
                 expanded_model.layers[i].set_weights(model.layers[i].get_weights())
             model = expanded_model

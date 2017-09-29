@@ -66,6 +66,7 @@ def test_mobilenet_v1_on_catdog_datasets(catdog_dictionary, catdog_train_dataset
         num_classes=len(catdog_dictionary),
         epochs=1,
         batch_size=1,
+        model_kwargs={'alpha': 1.0}
     )
     trainer.run()
 
