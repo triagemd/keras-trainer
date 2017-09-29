@@ -24,7 +24,7 @@ class Trainer(object):
     }
 
     def __init__(self, model_spec, dictionary, train_dataset_dir, val_dataset_dir, output_model_dir, output_logs_dir, **options):
-        self.model_spec = ModelSpec.get(model_spec)
+        self.model_spec = model_spec if isinstance(model_spec, ModelSpec) else ModelSpec.get(model_spec)
         self.dictionary = dictionary
         self.train_dataset_dir = train_dataset_dir
         self.val_dataset_dir = val_dataset_dir
