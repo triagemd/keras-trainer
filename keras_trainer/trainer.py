@@ -136,7 +136,7 @@ class Trainer(object):
 
         # GPU multiprocessing (if None we use all available GPUs)
         if self.num_gpus > 1:
-            model = make_parallel(model, self.num_gpu)
+            model = make_parallel(model, self.num_gpus)
 
         # Override the optimizer or use the default.
         optimizer = self.optimizer or optimizers.SGD(
