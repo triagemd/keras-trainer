@@ -5,6 +5,7 @@ from keras.models import Model
 from keras.layers import Dense, Activation
 from keras.preprocessing import image
 from keras.callbacks import TensorBoard, ModelCheckpoint
+from keras.applications.mobilenet import MobileNet
 from keras_model_specs import ModelSpec
 
 
@@ -13,19 +14,20 @@ class Trainer(object):
     OPTIONS = {
         'batch_size': {'type': int, 'default': 1},
         'epochs': {'type': int, 'default': 1},
-        'alpha': {'type': int, 'default': 1},
         'decay': {'type': float, 'default': 0.0005},
         'momentum': {'type': float, 'default': 0.9},
         'sgd_lr': {'type': float, 'default': 0.01},
         'pooling': {'type': str, 'default': 'avg'},
         'weights': {'type': str, 'default': 'imagenet'},
         'workers': {'type': int, 'default': 1},
-        'max_queue_size': {'type': int, 'default': 16}
+        'max_queue_size': {'type': int, 'default': 16},
+        'num_classes': {'type': int, 'default': None},
+        'verbose': {'type': str, 'default': False},
+        'model_kwargs': {'type': dict, 'default': {}}
     }
 
-    def __init__(self, model_spec, dictionary, train_dataset_dir, val_dataset_dir, output_model_dir, output_logs_dir, **options):
-        self.model_spec = ModelSpec.get(model_spec)
-        self.dictionary = dictionary
+    def __init__(self, model_spec, train_dataset_dir, val_dataset_dir, output_model_dir, output_logs_dir, **options):
+        self.model_spec = model_spec if isinstance(model_spec, ModelSpec) else ModelSpec.get(model_spec)
         self.train_dataset_dir = train_dataset_dir
         self.val_dataset_dir = val_dataset_dir
         self.output_model_dir = output_model_dir
@@ -45,7 +47,11 @@ class Trainer(object):
             value = options.get(key, option.get('default'))
             setattr(self, key, value)
 
+        if self.num_classes is None and self.top_layers is None:
+            raise ValueError('num_classes must be set to use the default fully connected + softmax top_layers')
+
     def run(self):
+        # Set up the training data generator.
         train_generator = self.train_generator or image.ImageDataGenerator(
             rotation_range=180,
             width_shift_range=0,
@@ -58,15 +64,16 @@ class Trainer(object):
             fill_mode='nearest'
         )
 
-        val_generator = self.val_generator or image.ImageDataGenerator(
-            preprocessing_function=self.model_spec.preprocess_input
-        )
-
         train_gen = train_generator.flow_from_directory(
             self.train_dataset_dir,
             batch_size=self.batch_size,
             target_size=self.model_spec.target_size[:2],
             class_mode='categorical'
+        )
+
+        # Set up the validation data generator.
+        val_generator = self.val_generator or image.ImageDataGenerator(
+            preprocessing_function=self.model_spec.preprocess_input
         )
 
         val_gen = val_generator.flow_from_directory(
@@ -77,21 +84,46 @@ class Trainer(object):
             shuffle=False
         )
 
-        model = self.model_spec.klass(
-            self.model_spec.target_size,
-            alpha=self.alpha,
-            weights=self.weights,
-            include_top=False,
-            pooling=self.pooling
-        )
+        # Initialize the model instance.
+        if self.model_spec.klass == MobileNet:
+            # Initialize the base with valid target_size.
+            model_kwargs = {
+                'input_shape': (224, 224, 3),
+                'weights': self.weights,
+                'include_top': False,
+                'pooling': self.pooling
+            }
+            model_kwargs.update(self.model_kwargs)
+            model = self.model_spec.klass(**model_kwargs)
 
+            # Expand the base model to match the spec target_size.
+            model_kwargs.update({
+                'input_shape': self.model_spec.target_size,
+                'weights': None
+            })
+            expanded_model = self.model_spec.klass(**model_kwargs)
+            for i in range(1, len(expanded_model.layers)):
+                expanded_model.layers[i].set_weights(model.layers[i].get_weights())
+            model = expanded_model
+        else:
+            model = self.model_spec.klass(
+                input_shape=self.model_spec.target_size,
+                weights=self.weights,
+                include_top=False,
+                pooling=self.pooling
+            )
+
+        # Include the given top layers.
         if self.top_layers is None:
-            layer = Dense(len(self.dictionary), name='dense')(model.output)
+            layer = Dense(self.num_classes, name='dense')(model.output)
             self.top_layers = Activation('softmax', name='act_softmax')(layer)
         model = Model(model.input, self.top_layers)
 
-        model.summary()
+        # Print the model summary.
+        if self.verbose:
+            model.summary()
 
+        # Override the optimizer or use the default.
         optimizer = self.optimizer or optimizers.SGD(
             lr=self.sgd_lr,
             decay=self.decay,
