@@ -20,7 +20,7 @@ class Trainer(object):
         'sgd_lr': {'type': float, 'default': 0.01},
         'pooling': {'type': str, 'default': 'avg'},
         'weights': {'type': str, 'default': 'imagenet'},
-        'num_gpu': {'type': int, 'default': 1},
+        'num_gpus': {'type': int, 'default': 1},
         'workers': {'type': int, 'default': 1},
         'max_queue_size': {'type': int, 'default': 16},
         'num_classes': {'type': int, 'default': None},
@@ -54,6 +54,9 @@ class Trainer(object):
 
         if self.num_classes is None and self.top_layers is None:
             raise ValueError('num_classes must be set to use the default fully connected + softmax top_layers')
+
+        if self.num_gpus is None:
+            self.num_gpus = detect_num_gpus()
 
     def run(self):
         # Set up the training data generator.
@@ -132,9 +135,7 @@ class Trainer(object):
             model.summary()
 
         # GPU multiprocessing (if None we use all available GPUs)
-        if self.num_gpu is None:
-            model = make_parallel(model, detect_num_gpus())
-        elif self.num_gpu > 1:
+        if self.num_gpus > 1:
             model = make_parallel(model, self.num_gpu)
 
         # Override the optimizer or use the default.
