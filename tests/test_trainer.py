@@ -101,7 +101,6 @@ def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override(catdog_diction
         num_classes=len(catdog_dictionary),
         epochs=1,
         batch_size=1,
-        num_classes=catdog_num_classes
     )
     trainer.run()
 
