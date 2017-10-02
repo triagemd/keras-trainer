@@ -33,16 +33,21 @@ def output_logs_dir():
         yield temp_dir
 
 
-def test_mobilenet_v1_on_catdog_datasets(catdog_dictionary, catdog_train_dataset_dir, catdog_val_dataset_dir, output_model_dir, output_logs_dir):
+@pytest.fixture('session')
+def catdog_num_classes():
+    return 2
+
+
+def test_mobilenet_v1_on_catdog_datasets(catdog_num_classes, catdog_train_dataset_dir, catdog_val_dataset_dir, output_model_dir, output_logs_dir):
     trainer = Trainer(
         'mobilenet_v1',
-        catdog_dictionary,
         catdog_train_dataset_dir,
         catdog_val_dataset_dir,
         output_model_dir,
         output_logs_dir,
         epochs=1,
         batch_size=1,
+        num_classes=catdog_num_classes
     )
     trainer.run()
 
