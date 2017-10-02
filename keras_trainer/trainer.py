@@ -134,7 +134,7 @@ class Trainer(object):
         if self.verbose:
             model.summary()
 
-        # GPU multiprocessing (if None we use all available GPUs)
+        # GPU multiprocessing (if num_gpus is None we use all available GPUs)
         if self.num_gpus > 1:
             model = make_parallel(model, self.num_gpus)
 
