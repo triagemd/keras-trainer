@@ -38,7 +38,7 @@ def run_parallel_test(data_generator):
 
     trained_epochs = []
     tracker_cb = LambdaCallback(on_epoch_begin=lambda epoch, logs: trained_epochs.append(epoch))
-    out = model.fit_generator(data_generator(4),
+    model.fit_generator(data_generator(4),
                               steps_per_epoch=3,
                               epochs=5,
                               initial_epoch=2,
