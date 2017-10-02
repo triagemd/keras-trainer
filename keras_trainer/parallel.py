@@ -21,6 +21,12 @@ import tensorflow as tf
 from keras.models import Model
 from keras.layers.core import Lambda
 from keras.layers.merge import concatenate
+from tensorflow.python.client import device_lib
+
+
+def detect_num_gpus():
+    local_device_protos = device_lib.list_local_devices()
+    return len([x.name for x in local_device_protos if x.device_type == 'GPU'])
 
 
 def make_parallel(model, gpu_count):

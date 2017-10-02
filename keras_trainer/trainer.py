@@ -7,7 +7,7 @@ from keras.preprocessing import image
 from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.applications.mobilenet import MobileNet
 from keras_model_specs import ModelSpec
-from keras_trainer.parallel import make_parallel
+from keras_trainer.parallel import make_parallel, detect_num_gpus
 
 
 class Trainer(object):
@@ -131,8 +131,10 @@ class Trainer(object):
         if self.verbose:
             model.summary()
 
-        # GPU multiprocessing
-        if self.num_gpu > 1:
+        # GPU multiprocessing (if None we use all available GPUs)
+        if self.num_gpu is None:
+            model = make_parallel(model, detect_num_gpus())
+        elif self.num_gpu > 1:
             model = make_parallel(model, self.num_gpu)
 
         # Override the optimizer or use the default.

@@ -38,7 +38,7 @@ def output_logs_dir():
 def catdog_num_classes():
     return 2
 
-  
+
 def test_resnet50_on_catdog_datasets(catdog_dictionary, catdog_train_dataset_dir, catdog_val_dataset_dir, output_model_dir, output_logs_dir):
     trainer = Trainer(
         ModelSpec.get('resnet50', preprocess_args=[1, 2, 3]),
