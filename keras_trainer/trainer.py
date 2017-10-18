@@ -1,5 +1,6 @@
 import os
 
+from six import string_types
 from keras import optimizers
 from keras.models import Model, load_model
 from keras.layers import Dense, Activation
@@ -13,6 +14,22 @@ from keras_trainer.parallel import make_parallel, detect_num_gpus
 class Trainer(object):
 
     OPTIONS = {
+        'model_spec': {'type': str},
+        'train_dataset_dir': {'type': str},
+        'val_dataset_dir': {'type': str},
+        'output_model_dir': {'type': str},
+        'output_logs_dir': {'type': str},
+        'checkpoint_path': {'type': str, 'default': None},
+        'train_data_generator': {'type': None, 'default': None},
+        'val_data_generator': {'type': None, 'default': None},
+        'train_generator': {'type': None, 'default': None},
+        'val_generator': {'type': None, 'default': None},
+        'top_layers': {'type': None, 'default': None},
+        'optimizer': {'type': None, 'default': None},
+        'callback_list': {'type': list, 'default': []},
+        'class_weights': {'type': None, 'default': None},
+        'loss_function': {'type': str, 'default': 'categorical_crossentropy'},
+        'metrics': {'type': list, 'default': ['accuracy', ]},
         'batch_size': {'type': int, 'default': 1},
         'epochs': {'type': int, 'default': 1},
         'decay': {'type': float, 'default': 0.0005},
@@ -28,29 +45,17 @@ class Trainer(object):
         'model_kwargs': {'type': dict, 'default': {}}
     }
 
-    def __init__(self, model_spec, train_dataset_dir, val_dataset_dir, output_model_dir, output_logs_dir, **options):
-        self.model_spec = model_spec if isinstance(model_spec, ModelSpec) else ModelSpec.get(model_spec)
-        self.train_dataset_dir = train_dataset_dir
-        self.val_dataset_dir = val_dataset_dir
-        self.output_model_dir = output_model_dir
-        self.output_logs_dir = output_logs_dir
-        self.checkpoint_path = options.pop('checkpoint_path', None)
-        self.train_data_generator = options.pop('train_data_generator', None)
-        self.val_data_generator = options.pop('val_data_generator', None)
-        self.train_generator = options.pop('train_generator', None)
-        self.val_generator = options.pop('val_generator', None)
-        self.top_layers = options.pop('top_layers', None)
-        self.optimizer = options.pop('optimizer', None)
-        self.callback_list = options.pop('callback_list', [])
-        self.class_weights = options.pop('class_weights', None)
-        self.loss_function = options.pop('loss_function', 'categorical_crossentropy')
-        self.metrics = options.pop('metrics', ['accuracy'])
-
+    def __init__(self, **options):
         for key, option in self.OPTIONS.items():
             if key not in options and 'default' not in option:
                 raise ValueError('missing required option %s' % (key, ))
             value = options.get(key, option.get('default'))
             setattr(self, key, value)
+
+        if isinstance(self.model_spec, string_types):
+            self.model_spec = ModelSpec.get(self.model_spec)
+        elif isinstance(self.model_spec, dict):
+            self.model_spec = ModelSpec.get(self.model_spec['base'], **self.model_spec)
 
         if self.num_classes is None and self.top_layers is None:
             raise ValueError('num_classes must be set to use the default fully connected + softmax top_layers')

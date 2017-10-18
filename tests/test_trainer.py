@@ -36,11 +36,11 @@ def output_logs_dir():
 
 def test_resnet50_on_catdog_datasets(catdog_dictionary, catdog_train_dataset_dir, catdog_val_dataset_dir, output_model_dir, output_logs_dir):
     trainer = Trainer(
-        ModelSpec.get('resnet50', preprocess_args=[1, 2, 3]),
-        catdog_train_dataset_dir,
-        catdog_val_dataset_dir,
-        output_model_dir,
-        output_logs_dir,
+        model_spec=ModelSpec.get('resnet50', preprocess_args=[1, 2, 3]),
+        train_dataset_dir=catdog_train_dataset_dir,
+        val_dataset_dir=catdog_val_dataset_dir,
+        output_model_dir=output_model_dir,
+        output_logs_dir=output_logs_dir,
         num_classes=len(catdog_dictionary),
         epochs=1,
         batch_size=1,
@@ -58,11 +58,11 @@ def test_resnet50_on_catdog_datasets(catdog_dictionary, catdog_train_dataset_dir
 
 def test_mobilenet_v1_on_catdog_datasets(catdog_dictionary, catdog_train_dataset_dir, catdog_val_dataset_dir, output_model_dir, output_logs_dir):
     trainer = Trainer(
-        'mobilenet_v1',
-        catdog_train_dataset_dir,
-        catdog_val_dataset_dir,
-        output_model_dir,
-        output_logs_dir,
+        model_spec='mobilenet_v1',
+        train_dataset_dir=catdog_train_dataset_dir,
+        val_dataset_dir=catdog_val_dataset_dir,
+        output_model_dir=output_model_dir,
+        output_logs_dir=output_logs_dir,
         num_classes=len(catdog_dictionary),
         epochs=1,
         batch_size=1,
@@ -88,11 +88,11 @@ def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override(catdog_diction
         preprocess_args=[1, 2, 3]
     )
     trainer = Trainer(
-        model_spec,
-        catdog_train_dataset_dir,
-        catdog_val_dataset_dir,
-        output_model_dir,
-        output_logs_dir,
+        model_spec=model_spec,
+        train_dataset_dir=catdog_train_dataset_dir,
+        val_dataset_dir=catdog_val_dataset_dir,
+        output_model_dir=output_model_dir,
+        output_logs_dir=output_logs_dir,
         num_classes=len(catdog_dictionary),
         epochs=1,
         batch_size=1,
@@ -117,11 +117,11 @@ def test_mobilenet_v1_on_catdog_datasets_with_num_gpus_override(catdog_dictionar
         preprocess_args=[1, 2, 3]
     )
     trainer = Trainer(
-        model_spec,
-        catdog_train_dataset_dir,
-        catdog_val_dataset_dir,
-        output_model_dir,
-        output_logs_dir,
+        model_spec=model_spec,
+        train_dataset_dir=catdog_train_dataset_dir,
+        val_dataset_dir=catdog_val_dataset_dir,
+        output_model_dir=output_model_dir,
+        output_logs_dir=output_logs_dir,
         num_classes=len(catdog_dictionary),
         epochs=1,
         batch_size=1,
