@@ -48,9 +48,13 @@ class Trainer(object):
     def __init__(self, **options):
         for key, option in self.OPTIONS.items():
             if key not in options and 'default' not in option:
-                raise ValueError('missing required option %s' % (key, ))
+                raise ValueError('missing required option: %s' % (key, ))
             value = options.get(key, option.get('default'))
             setattr(self, key, value)
+
+        extra_options = set(options.keys()) - set(self.OPTIONS.keys())
+        if len(extra_options) > 0:
+            raise ValueError('unsupported options given: %s' % (', '.join(extra_options), ))
 
         if isinstance(self.model_spec, string_types):
             self.model_spec = ModelSpec.get(self.model_spec)

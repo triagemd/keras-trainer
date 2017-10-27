@@ -34,26 +34,34 @@ def output_logs_dir():
         yield temp_dir
 
 
-def test_resnet50_on_catdog_datasets(catdog_dictionary, catdog_train_dataset_dir, catdog_val_dataset_dir, output_model_dir, output_logs_dir):
-    trainer = Trainer(
-        model_spec=ModelSpec.get('resnet50', preprocess_args=[1, 2, 3]),
-        train_dataset_dir=catdog_train_dataset_dir,
-        val_dataset_dir=catdog_val_dataset_dir,
-        output_model_dir=output_model_dir,
-        output_logs_dir=output_logs_dir,
-        num_classes=len(catdog_dictionary),
-        epochs=1,
-        batch_size=1,
-    )
-    trainer.run()
+def test_mobilenet_v1_on_catdog_datasets_with_missing_required_options(catdog_dictionary, catdog_train_dataset_dir, catdog_val_dataset_dir, output_model_dir, output_logs_dir):
+    with pytest.raises(ValueError, message='missing required option: model_spec'):
+        Trainer(
+            train_dataset_dir=catdog_train_dataset_dir,
+            val_dataset_dir=catdog_val_dataset_dir,
+            output_model_dir=output_model_dir,
+            output_logs_dir=output_logs_dir,
+            num_classes=len(catdog_dictionary),
+            epochs=1,
+            batch_size=1,
+            model_kwargs={'alpha': 1.0}
+        )
 
-    actual = list_files(output_model_dir, relative=True)
-    assert sorted(actual) == sorted(['best.hdf5', 'final.hdf5'])
 
-    actual = list_files(output_logs_dir, relative=True)
-    assert len(actual) == 2
-    for path in actual:
-        assert path.startswith('events.out.tfevents.')
+def test_mobilenet_v1_on_catdog_datasets_with_extra_unsupported_options(catdog_dictionary, catdog_train_dataset_dir, catdog_val_dataset_dir, output_model_dir, output_logs_dir):
+    with pytest.raises(ValueError, message='unsupported options given: some_other_arg'):
+        Trainer(
+            some_other_arg='foo',
+            model_spec='mobilenet_v1',
+            train_dataset_dir=catdog_train_dataset_dir,
+            val_dataset_dir=catdog_val_dataset_dir,
+            output_model_dir=output_model_dir,
+            output_logs_dir=output_logs_dir,
+            num_classes=len(catdog_dictionary),
+            epochs=1,
+            batch_size=1,
+            model_kwargs={'alpha': 1.0}
+        )
 
 
 def test_mobilenet_v1_on_catdog_datasets(catdog_dictionary, catdog_train_dataset_dir, catdog_val_dataset_dir, output_model_dir, output_logs_dir):
@@ -126,6 +134,28 @@ def test_mobilenet_v1_on_catdog_datasets_with_num_gpus_override(catdog_dictionar
         epochs=1,
         batch_size=1,
         num_gpus=4
+    )
+    trainer.run()
+
+    actual = list_files(output_model_dir, relative=True)
+    assert sorted(actual) == sorted(['best.hdf5', 'final.hdf5'])
+
+    actual = list_files(output_logs_dir, relative=True)
+    assert len(actual) == 2
+    for path in actual:
+        assert path.startswith('events.out.tfevents.')
+
+
+def test_resnet50_on_catdog_datasets(catdog_dictionary, catdog_train_dataset_dir, catdog_val_dataset_dir, output_model_dir, output_logs_dir):
+    trainer = Trainer(
+        model_spec=ModelSpec.get('resnet50', preprocess_args=[1, 2, 3]),
+        train_dataset_dir=catdog_train_dataset_dir,
+        val_dataset_dir=catdog_val_dataset_dir,
+        output_model_dir=output_model_dir,
+        output_logs_dir=output_logs_dir,
+        num_classes=len(catdog_dictionary),
+        epochs=1,
+        batch_size=1,
     )
     trainer.run()
 
