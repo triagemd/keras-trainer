@@ -1,6 +1,7 @@
 import json
 import base64
 import argparse
+import binascii
 
 from .trainer import Trainer
 
@@ -20,6 +21,8 @@ if __name__ == '__main__':
     options = vars(args)
     try:
         options['model_spec'] = json.loads(base64.b64decode(options['model_spec']))
+    except binascii.Error:
+        pass
     except TypeError:
         pass
 
