@@ -59,7 +59,7 @@ class Trainer(object):
         if isinstance(self.model_spec, string_types):
             self.model_spec = ModelSpec.get(self.model_spec)
         elif isinstance(self.model_spec, dict):
-            self.model_spec = ModelSpec.get(self.model_spec['base'], **self.model_spec)
+            self.model_spec = ModelSpec.get(self.model_spec['name'], **self.model_spec)
 
         if self.num_classes is None and self.top_layers is None:
             raise ValueError('num_classes must be set to use the default fully connected + softmax top_layers')
