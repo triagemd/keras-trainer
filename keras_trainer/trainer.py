@@ -1,4 +1,8 @@
 import os
+import json
+import platform
+import keras
+import tensorflow
 
 from six import string_types
 from keras import optimizers
@@ -66,6 +70,17 @@ class Trainer(object):
 
         if self.num_gpus is None:
             self.num_gpus = detect_num_gpus()
+
+        options = dict([(key, getattr(self, key)) for key in self.OPTIONS.keys() if getattr(self, key) is not None])
+        options['model_spec'] = self.model_spec.as_json()
+        self.context = {
+            'versions': {
+                'python': platform.python_version(),
+                'tensorflow': tensorflow.__version__,
+                'keras': keras.__version__
+            },
+            'options': options
+        }
 
     def run(self):
         # Set up the training data generator.
@@ -198,3 +213,16 @@ class Trainer(object):
         )
 
         model.save(os.path.join(self.output_model_dir, 'final.hdf5'))
+
+        with open(os.path.join(self.output_model_dir, 'training.json'), 'w') as file:
+            safe_options = {}
+            for key, value in self.context['options'].items():
+                if value is None:
+                    continue
+                try:
+                    json.dumps(value)
+                    safe_options[key] = value
+                except TypeError:
+                    continue
+            self.context['options'] = safe_options
+            file.write(json.dumps(self.context, indent=True, sort_keys=True))
