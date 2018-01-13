@@ -71,6 +71,8 @@ class Trainer(object):
         if self.num_gpus is None:
             self.num_gpus = detect_num_gpus()
 
+        self.history = None
+
         options = dict([(key, getattr(self, key)) for key in self.OPTIONS.keys() if getattr(self, key) is not None])
         options['model_spec'] = self.model_spec.as_json()
         self.context = {
@@ -84,7 +86,7 @@ class Trainer(object):
 
     def run(self):
         # Set up the training data generator.
-        train_data_generator = self.train_generator or image.ImageDataGenerator(
+        train_data_generator = self.train_data_generator or image.ImageDataGenerator(
             rotation_range=180,
             width_shift_range=0,
             height_shift_range=0,
@@ -118,7 +120,7 @@ class Trainer(object):
 
         # Initialize the model instance.
         if self.checkpoint_path is not None:
-            model = load_model(self.checkpoint_path)
+            self.model = load_model(self.checkpoint_path)
         else:
             if self.model_spec.klass == MobileNet:
                 # Initialize the base with valid target_size.
@@ -129,7 +131,7 @@ class Trainer(object):
                     'pooling': self.pooling
                 }
                 model_kwargs.update(self.model_kwargs)
-                model = self.model_spec.klass(**model_kwargs)
+                self.model = self.model_spec.klass(**model_kwargs)
 
                 # Expand the base model to match the spec target_size.
                 model_kwargs.update({
@@ -139,9 +141,9 @@ class Trainer(object):
                 expanded_model = self.model_spec.klass(**model_kwargs)
                 for i in range(1, len(expanded_model.layers)):
                     expanded_model.layers[i].set_weights(model.layers[i].get_weights())
-                model = expanded_model
+                self.model = expanded_model
             else:
-                model = self.model_spec.klass(
+                self.model = self.model_spec.klass(
                     input_shape=self.model_spec.target_size,
                     weights=self.weights,
                     include_top=False,
@@ -152,15 +154,15 @@ class Trainer(object):
             if self.top_layers is None:
                 layer = Dense(self.num_classes, name='dense')(model.output)
                 self.top_layers = Activation('softmax', name='act_softmax')(layer)
-            model = Model(model.input, self.top_layers)
+            self.model = Model(model.input, self.top_layers)
 
         # Print the model summary.
         if self.verbose:
-            model.summary()
+            self.model.summary()
 
         # GPU multiprocessing (if num_gpus is None we use all available GPUs)
         if self.num_gpus > 1:
-            model = make_parallel(model, self.num_gpus)
+            self.model = make_parallel(self.model, self.num_gpus)
 
         # Override the optimizer or use the default.
         optimizer = self.optimizer or optimizers.SGD(
@@ -190,16 +192,16 @@ class Trainer(object):
             write_graph=True,
             write_images=True
         )
-        tensorboard.set_model(model)
+        tensorboard.set_model(self.model)
         self.callback_list.append(tensorboard)
 
-        model.compile(
+        self.model.compile(
             optimizer=optimizer,
             loss=self.loss_function,
             metrics=self.metrics
         )
 
-        model.fit_generator(
+        self.history = self.model.fit_generator(
             train_gen,
             verbose=1,
             steps_per_epoch=train_gen.samples // self.batch_size,
@@ -212,7 +214,7 @@ class Trainer(object):
             max_queue_size=self.max_queue_size
         )
 
-        model.save(os.path.join(self.output_model_dir, 'final.hdf5'))
+        self.model.save(os.path.join(self.output_model_dir, 'final.hdf5'))
 
         with open(os.path.join(self.output_model_dir, 'training.json'), 'w') as file:
             safe_options = {}
