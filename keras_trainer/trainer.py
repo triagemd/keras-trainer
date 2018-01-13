@@ -140,7 +140,7 @@ class Trainer(object):
                 })
                 expanded_model = self.model_spec.klass(**model_kwargs)
                 for i in range(1, len(expanded_model.layers)):
-                    expanded_model.layers[i].set_weights(model.layers[i].get_weights())
+                    expanded_model.layers[i].set_weights(self.model.layers[i].get_weights())
                 self.model = expanded_model
             else:
                 self.model = self.model_spec.klass(
@@ -152,9 +152,9 @@ class Trainer(object):
 
             # Include the given top layers.
             if self.top_layers is None:
-                layer = Dense(self.num_classes, name='dense')(model.output)
+                layer = Dense(self.num_classes, name='dense')(self.model.output)
                 self.top_layers = Activation('softmax', name='act_softmax')(layer)
-            self.model = Model(model.input, self.top_layers)
+            self.model = Model(self.model.input, self.top_layers)
 
         # Print the model summary.
         if self.verbose:
