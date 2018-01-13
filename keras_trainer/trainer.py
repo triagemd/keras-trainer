@@ -175,8 +175,8 @@ class Trainer(object):
         if not os.path.exists(self.output_model_dir):
             os.makedirs(self.output_model_dir)
 
-        checkpoint = ModelCheckpoint(
-            os.path.join(self.output_model_dir, 'best.hdf5'),
+        checkpoint_acc = ModelCheckpoint(
+            os.path.join(self.output_model_dir, 'weights_max_acc.{epoch:02d}-{val_acc:.2f}.hdf5'),
             verbose=1,
             monitor='val_acc',
             save_best_only=True,
@@ -184,7 +184,18 @@ class Trainer(object):
             mode='max'
         )
 
-        self.callback_list.append(checkpoint)
+        self.callback_list.append(checkpoint_acc)
+
+        checkpoint_loss = ModelCheckpoint(
+            os.path.join(self.output_model_dir, 'weights_min_loss.{epoch:02d}-{val_loss:.2f}.hdf5'),
+            verbose=1,
+            monitor='val_loss',
+            save_best_only=True,
+            save_weights_only=False,
+            mode='min'
+        )
+
+        self.callback_list.append(checkpoint_loss)
 
         tensorboard = TensorBoard(
             log_dir=self.output_logs_dir,
