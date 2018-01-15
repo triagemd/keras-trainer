@@ -108,7 +108,7 @@ def test_mobilenet_v1_on_catdog_datasets(catdog_dictionary, catdog_train_dataset
     trainer.run()
 
     actual = list_files(output_model_dir, relative=True)
-    assert sorted(actual) == sorted(['best.hdf5', 'final.hdf5', 'training.json'])
+    assert len(actual) == 4
 
     actual = list_files(output_logs_dir, relative=True)
     assert len(actual) == 2
@@ -161,7 +161,7 @@ def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override(catdog_diction
     trainer.run()
 
     actual = list_files(output_model_dir, relative=True)
-    assert sorted(actual) == sorted(['best.hdf5', 'final.hdf5', 'training.json'])
+    assert len(actual) == 4
 
     actual = list_files(output_logs_dir, relative=True)
     assert len(actual) == 2
@@ -214,7 +214,7 @@ def test_mobilenet_v1_on_catdog_datasets_with_num_gpus_override(catdog_dictionar
     trainer.run()
 
     actual = list_files(output_model_dir, relative=True)
-    assert sorted(actual) == sorted(['best.hdf5', 'final.hdf5', 'training.json'])
+    assert len(actual) == 4
 
     actual = list_files(output_logs_dir, relative=True)
     assert len(actual) == 2
@@ -260,7 +260,7 @@ def test_resnet50_on_catdog_datasets(catdog_dictionary, catdog_train_dataset_dir
     trainer.run()
 
     actual = list_files(output_model_dir, relative=True)
-    assert sorted(actual) == sorted(['best.hdf5', 'final.hdf5', 'training.json'])
+    assert len(actual) == 4
 
     actual = list_files(output_logs_dir, relative=True)
     assert len(actual) == 2
