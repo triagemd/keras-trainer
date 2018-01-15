@@ -3,6 +3,7 @@ import json
 import platform
 import keras
 import tensorflow
+import copy
 
 from six import string_types
 from keras import optimizers
@@ -53,7 +54,7 @@ class Trainer(object):
         for key, option in self.OPTIONS.items():
             if key not in options and 'default' not in option:
                 raise ValueError('missing required option: %s' % (key, ))
-            value = options.get(key, option.get('default'))
+            value = options.get(key, copy.copy(option.get('default')))
             setattr(self, key, value)
 
         extra_options = set(options.keys()) - set(self.OPTIONS.keys())
