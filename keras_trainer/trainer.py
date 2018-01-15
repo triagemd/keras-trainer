@@ -176,7 +176,7 @@ class Trainer(object):
             os.makedirs(self.output_model_dir)
 
         checkpoint_acc = ModelCheckpoint(
-            os.path.join(self.output_model_dir, 'weights_max_acc.{epoch:02d}-{val_acc:.2f}.hdf5'),
+            os.path.join(self.output_model_dir, 'weights_max_acc_epoch_{epoch:02d}_value_{val_acc:.2f}.hdf5'),
             verbose=1,
             monitor='val_acc',
             save_best_only=True,
@@ -187,7 +187,7 @@ class Trainer(object):
         self.callback_list.append(checkpoint_acc)
 
         checkpoint_loss = ModelCheckpoint(
-            os.path.join(self.output_model_dir, 'weights_min_loss.{epoch:02d}-{val_loss:.2f}.hdf5'),
+            os.path.join(self.output_model_dir, 'weights_min_loss_epoch_{epoch:02d}_value_{val_loss:.2f}.hdf5'),
             verbose=1,
             monitor='val_loss',
             save_best_only=True,
