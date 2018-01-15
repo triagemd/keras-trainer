@@ -38,7 +38,7 @@ def test_run_with_model_spec_name_only(output_dir):
     ])
 
     actual = list_files(model_output_dir, relative=True)
-    assert len(actual) == 4
+    assert len(actual) == 3
 
     actual = list_files(logs_output_dir, relative=True)
     assert len(actual) > 0
@@ -68,7 +68,7 @@ def test_run_with_model_spec_encoded_base64(output_dir):
     ])
 
     actual = list_files(model_output_dir, relative=True)
-    assert len(actual) == 4
+    assert len(actual) == 3
 
     actual = list_files(logs_output_dir, relative=True)
     assert len(actual) > 0
