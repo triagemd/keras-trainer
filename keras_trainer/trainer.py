@@ -71,8 +71,6 @@ class Trainer(object):
         if self.num_gpus is None:
             self.num_gpus = detect_num_gpus()
 
-        self.history = None
-
         options = dict([(key, getattr(self, key)) for key in self.OPTIONS.keys() if getattr(self, key) is not None])
         options['model_spec'] = self.model_spec.as_json()
         self.context = {
@@ -183,7 +181,6 @@ class Trainer(object):
             save_weights_only=False,
             mode='max'
         )
-
         self.callback_list.append(checkpoint_acc)
 
         checkpoint_loss = ModelCheckpoint(
@@ -194,7 +191,6 @@ class Trainer(object):
             save_weights_only=False,
             mode='min'
         )
-
         self.callback_list.append(checkpoint_loss)
 
         tensorboard = TensorBoard(

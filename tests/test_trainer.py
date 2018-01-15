@@ -28,13 +28,13 @@ def catdog_val_dataset_dir():
 
 @pytest.fixture('function')
 def output_model_dir():
-    with TemporaryDirectory() as temp_dir:
+    with TemporaryDirectory('model_dir') as temp_dir:
         yield temp_dir
 
 
 @pytest.fixture('function')
 def output_logs_dir():
-    with TemporaryDirectory() as temp_dir:
+    with TemporaryDirectory('logs_dir') as temp_dir:
         yield temp_dir
 
 
@@ -108,7 +108,7 @@ def test_mobilenet_v1_on_catdog_datasets(catdog_dictionary, catdog_train_dataset
     trainer.run()
 
     actual = list_files(output_model_dir, relative=True)
-    assert len(actual) == 3
+    assert len(actual) == 4
 
     actual = list_files(output_logs_dir, relative=True)
     assert len(actual) == 2
@@ -161,7 +161,7 @@ def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override(catdog_diction
     trainer.run()
 
     actual = list_files(output_model_dir, relative=True)
-    assert len(actual) == 3
+    assert len(actual) == 4
 
     actual = list_files(output_logs_dir, relative=True)
     assert len(actual) == 2
@@ -260,7 +260,7 @@ def test_resnet50_on_catdog_datasets(catdog_dictionary, catdog_train_dataset_dir
     trainer.run()
 
     actual = list_files(output_model_dir, relative=True)
-    assert len(actual) == 3
+    assert len(actual) == 4
 
     actual = list_files(output_logs_dir, relative=True)
     assert len(actual) == 2
