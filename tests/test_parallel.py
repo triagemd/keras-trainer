@@ -30,10 +30,7 @@ def run_parallel_test(data_generator):
     loss = 'mse'
     loss_weights = [1., 0.5]
     model = Model([a, b], [a_2, b_2])
-    if keras_parallel:
-        model = multi_gpu_model(model, 2)
-    else:
-        model = make_parallel(model, 2)
+    model = make_parallel(model, 2)
     model.compile(optimizer, loss,
                   metrics=[],
                   loss_weights=loss_weights,
