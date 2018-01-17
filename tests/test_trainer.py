@@ -57,7 +57,6 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
               'model_kwargs': {'alpha': 1.0},
               'momentum': 0.9,
               'num_classes': 2,
-              'gpu_ids': [0],
               'output_logs_dir': 'redacted',
               'output_model_dir': 'redacted',
               'pooling': 'avg',
@@ -116,19 +115,6 @@ def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override():
         'preprocess_func': 'mean_subtraction',
         'target_size': [512, 512, 3]
     })
-
-
-def test_mobilenet_v1_on_catdog_datasets_with_num_gpus_override():
-    check_train_on_catdog_datasets({
-        'model_spec': 'mobilenet_v1',
-        'gpu_ids': [0, 1]
-    }, {
-        'klass': 'keras.applications.mobilenet.MobileNet',
-        'name': 'mobilenet_v1',
-        'preprocess_args': None,
-        'preprocess_func': 'between_plus_minus_1',
-        'target_size': [224, 224, 3]
-    }, 3)
 
 
 def test_resnet50_on_catdog_datasets():

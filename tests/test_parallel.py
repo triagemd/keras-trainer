@@ -6,7 +6,6 @@ from keras.engine.training import Model
 from keras.callbacks import LambdaCallback
 
 from keras_trainer.parallel import make_parallel
-from keras.utils.training_utils import multi_gpu_model
 
 
 def generate_even_data(batch_size):
@@ -21,7 +20,7 @@ def generate_uneven_data(batch_size):
                [np.random.random((batch_size + 1, 4)), np.random.random((batch_size + 1, 3))])
 
 
-def run_parallel_test(data_generator, keras_parallel=False):
+def run_parallel_test(data_generator):
     a = Input(shape=(3,), name='input_a')
     b = Input(shape=(3,), name='input_b')
     a_2 = Dense(4, name='dense_1')(a)
@@ -56,11 +55,3 @@ def test_make_parallel_with_even_data():
 
 def test_make_parallel_with_uneven_data():
     run_parallel_test(generate_uneven_data)
-
-
-def test_keras_make_parallel_with_even_data():
-    run_parallel_test(generate_even_data, True)
-
-
-def test_keras_make_parallel_with_uneven_data():
-    run_parallel_test(generate_uneven_data, True)
