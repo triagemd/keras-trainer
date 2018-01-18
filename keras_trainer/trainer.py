@@ -172,7 +172,7 @@ class Trainer(object):
             os.makedirs(self.output_model_dir)
 
         checkpoint_acc = ModelCheckpoint(
-            os.path.join(self.output_model_dir, 'best_model_max_acc}.hdf5'),
+            os.path.join(self.output_model_dir, 'best_model_max_acc.hdf5'),
             verbose=1,
             monitor='val_acc',
             save_best_only=True,
