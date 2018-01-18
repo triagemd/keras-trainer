@@ -13,7 +13,7 @@ from keras.preprocessing import image
 from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.applications.mobilenet import MobileNet
 from keras_model_specs import ModelSpec
-from keras_trainer.parallel import make_parallel, detect_num_gpus
+from keras.utils.training_utils import multi_gpu_model
 
 
 class Trainer(object):
@@ -42,7 +42,7 @@ class Trainer(object):
         'sgd_lr': {'type': float, 'default': 0.01},
         'pooling': {'type': str, 'default': 'avg'},
         'weights': {'type': str, 'default': 'imagenet'},
-        'num_gpus': {'type': int, 'default': 1},
+        'gpu_ids': {'type': int, 'default': None},
         'workers': {'type': int, 'default': 1},
         'max_queue_size': {'type': int, 'default': 16},
         'num_classes': {'type': int, 'default': None},
@@ -68,9 +68,6 @@ class Trainer(object):
 
         if self.num_classes is None and self.top_layers is None:
             raise ValueError('num_classes must be set to use the default fully connected + softmax top_layers')
-
-        if self.num_gpus is None:
-            self.num_gpus = detect_num_gpus()
 
         options = dict([(key, getattr(self, key)) for key in self.OPTIONS.keys() if getattr(self, key) is not None])
         options['model_spec'] = self.model_spec.as_json()
@@ -159,9 +156,9 @@ class Trainer(object):
         if self.verbose:
             self.model.summary()
 
-        # GPU multiprocessing (if num_gpus is None we use all available GPUs)
-        if self.num_gpus > 1:
-            self.model = make_parallel(self.model, self.num_gpus)
+        # If gpu_ids is None we use CPU, else a list of gpu_ids or an integer indicating the total gpu number
+        if self.gpu_ids is not None:
+            self.model = multi_gpu_model(self.model, self.gpu_ids)
 
         # Override the optimizer or use the default.
         optimizer = self.optimizer or optimizers.SGD(
