@@ -57,6 +57,7 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
               'model_kwargs': {'alpha': 1.0},
               'momentum': 0.9,
               'num_classes': 2,
+              'num_gpus': 0,
               'output_logs_dir': 'redacted',
               'output_model_dir': 'redacted',
               'pooling': 'avg',
