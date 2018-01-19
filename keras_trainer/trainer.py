@@ -13,7 +13,7 @@ from keras.preprocessing import image
 from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.applications.mobilenet import MobileNet
 from keras_model_specs import ModelSpec
-from keras.utils.training_utils import multi_gpu_model
+from keras_trainer.parallel import make_parallel
 
 
 class Trainer(object):
@@ -42,7 +42,7 @@ class Trainer(object):
         'sgd_lr': {'type': float, 'default': 0.01},
         'pooling': {'type': str, 'default': 'avg'},
         'weights': {'type': str, 'default': 'imagenet'},
-        'gpu_ids': {'type': int, 'default': None},
+        'num_gpus': {'type': int, 'default': 0},
         'workers': {'type': int, 'default': 1},
         'max_queue_size': {'type': int, 'default': 16},
         'num_classes': {'type': int, 'default': None},
@@ -157,8 +157,8 @@ class Trainer(object):
             self.model.summary()
 
         # If gpu_ids is None we use CPU, else a list of gpu_ids or an integer indicating the total gpu number
-        if self.gpu_ids is not None:
-            self.model = multi_gpu_model(self.model, self.gpu_ids)
+        if self.num_gpus > 0:
+            self.model = make_parallel(self.model, self.num_gpus)
 
         # Override the optimizer or use the default.
         optimizer = self.optimizer or optimizers.SGD(
