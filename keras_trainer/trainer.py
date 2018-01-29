@@ -156,8 +156,8 @@ class Trainer(object):
         if self.verbose:
             self.model.summary()
 
-        # If gpu_ids is None we use CPU, else a list of gpu_ids or an integer indicating the total gpu number
-        if self.num_gpus > 0:
+        # If num_gpus is higher than one, we parallelize the model
+        if self.num_gpus > 1:
             self.model = make_parallel(self.model, self.num_gpus)
 
         # Override the optimizer or use the default.
