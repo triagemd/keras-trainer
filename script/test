@@ -2,5 +2,5 @@
 . script/env
 ARGS="${@:-tests/}"
 set -e
-PYTHONPATH="." pytest $ARGS
+PYTHONPATH="." pytest -v $ARGS
 flake8 --max-line-length 50000 keras_trainer tests
