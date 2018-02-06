@@ -8,7 +8,7 @@ import copy
 from six import string_types
 from keras import optimizers
 from keras.models import Model, load_model
-from keras.layers import Dense, Activation
+from keras.layers import Dense, Activation, Dropout
 from keras.preprocessing import image
 from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.applications.mobilenet import MobileNet
@@ -41,6 +41,8 @@ class Trainer(object):
         'momentum': {'type': float, 'default': 0.9},
         'sgd_lr': {'type': float, 'default': 0.01},
         'pooling': {'type': str, 'default': 'avg'},
+        'sigmoid': {'type': bool, 'default': False},
+        'dropout_rate': {'type': float, 'default': 0.0},
         'weights': {'type': str, 'default': 'imagenet'},
         'num_gpus': {'type': int, 'default': 0},
         'workers': {'type': int, 'default': 1},
@@ -146,10 +148,33 @@ class Trainer(object):
                     pooling=self.pooling
                 )
 
-            # Include the given top layers.
+            # If top layers are given include them, else include a Dense Layer with Softmax/Sigmoid
+            # (Dropout optional if dropout_rate entered as parameter)
             if self.top_layers is None:
-                layer = Dense(self.num_classes, name='dense')(self.model.output)
-                self.top_layers = Activation('softmax', name='act_softmax')(layer)
+                # Init list of layers
+                self.top_layers = []
+
+                # Include Dropout
+                if self.dropout_rate > 0.0:
+                    self.top_layers.append(Dropout(self.dropout_rate))
+
+                # Set Dense Layer
+                self.top_layers.append(Dense(self.num_classes, name='dense'))
+
+                # Set Activation Layer
+                if self.sigmoid:
+                    self.top_layers.append(Activation('sigmoid', name='act_sigmoid'))
+                else:
+                    self.top_layers.append(Activation('softmax', name='act_softmax'))
+
+            # Layer Assembly
+            for i, layer in enumerate(self.top_layers):
+                if i == 0:
+                    self.top_layers[i] == layer(self.model.output)
+                else:
+                    self.top_layers[i] = layer(self.top_layers[i-1])
+
+            # Final Model
             self.model = Model(self.model.input, self.top_layers)
 
         # Print the model summary.
