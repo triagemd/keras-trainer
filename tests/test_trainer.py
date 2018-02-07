@@ -40,7 +40,6 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
         actual['options']['output_model_dir'] = 'redacted'
         actual['options']['train_dataset_dir'] = 'redacted'
         actual['options']['val_dataset_dir'] = 'redacted'
-        actual['options']['dropout_rate'] = 'redacted'
 
         expected = {
             'versions': {
@@ -63,7 +62,7 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
                 'output_model_dir': 'redacted',
                 'pooling': 'avg',
                 'sgd_lr': 0.01,
-                'dropout_rate': 'redacted',
+                'dropout_rate': '0.0',
                 'activation': 'softmax',
                 'train_dataset_dir': 'redacted',
                 'val_dataset_dir': 'redacted',
@@ -92,11 +91,16 @@ def test_mobilenet_v1_on_catdog_datasets_with_extra_unsupported_options():
 
 
 def test_mobilenet_v1_on_catdog_datasets_with_dropout():
-    with pytest.raises(ValueError, message='unsupported options given: some_other_arg'):
-        check_train_on_catdog_datasets({
-            'model_spec': 'mobilenet_v1',
-            'dropout_rate': 0.5
-        })
+    check_train_on_catdog_datasets({
+        'dropout_rate': 0.5,
+        'model_spec': 'mobilenet_v1'
+    }, {
+        'klass': 'keras.applications.mobilenet.MobileNet',
+        'name': 'mobilenet_v1',
+        'preprocess_args': None,
+        'preprocess_func': 'between_plus_minus_1',
+        'target_size': [224, 224, 3]
+    })
 
 
 def test_mobilenet_v1_on_catdog_datasets():
