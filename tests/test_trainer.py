@@ -40,6 +40,7 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
         actual['options']['output_model_dir'] = 'redacted'
         actual['options']['train_dataset_dir'] = 'redacted'
         actual['options']['val_dataset_dir'] = 'redacted'
+        actual['options']['dropout_rate'] = 'redacted'
 
         expected = {
             'versions': {
@@ -62,7 +63,7 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
                 'output_model_dir': 'redacted',
                 'pooling': 'avg',
                 'sgd_lr': 0.01,
-                'dropout_rate': 0.0,
+                'dropout_rate': 'redacted',
                 'activation': 'softmax',
                 'train_dataset_dir': 'redacted',
                 'val_dataset_dir': 'redacted',
