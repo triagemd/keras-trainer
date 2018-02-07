@@ -4,7 +4,6 @@ import platform
 import keras
 import tensorflow
 import copy
-import sys
 
 from six import string_types
 from keras import optimizers
