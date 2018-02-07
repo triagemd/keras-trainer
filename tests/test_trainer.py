@@ -62,7 +62,7 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
                 'output_model_dir': 'redacted',
                 'pooling': 'avg',
                 'sgd_lr': 0.01,
-                'dropout_rate': '0.0',
+                'dropout_rate': 0.0,
                 'activation': 'softmax',
                 'train_dataset_dir': 'redacted',
                 'val_dataset_dir': 'redacted',
