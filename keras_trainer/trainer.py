@@ -4,6 +4,7 @@ import platform
 import keras
 import tensorflow
 import copy
+import sys
 
 from six import string_types
 from keras import optimizers
@@ -41,7 +42,7 @@ class Trainer(object):
         'momentum': {'type': float, 'default': 0.9},
         'sgd_lr': {'type': float, 'default': 0.01},
         'pooling': {'type': str, 'default': 'avg'},
-        'sigmoid': {'type': bool, 'default': False},
+        'activation': {'type': str, 'default': 'softmax'},
         'dropout_rate': {'type': float, 'default': 0.0},
         'weights': {'type': str, 'default': 'imagenet'},
         'num_gpus': {'type': int, 'default': 0},
@@ -83,39 +84,6 @@ class Trainer(object):
         }
 
     def run(self):
-        # Set up the training data generator.
-        train_data_generator = self.train_data_generator or image.ImageDataGenerator(
-            rotation_range=180,
-            width_shift_range=0,
-            height_shift_range=0,
-            preprocessing_function=self.model_spec.preprocess_input,
-            shear_range=0,
-            zoom_range=0.1,
-            horizontal_flip=True,
-            vertical_flip=True,
-            fill_mode='nearest'
-        )
-
-        train_gen = self.train_generator or train_data_generator.flow_from_directory(
-            self.train_dataset_dir,
-            batch_size=self.batch_size,
-            target_size=self.model_spec.target_size[:2],
-            class_mode='categorical'
-        )
-
-        # Set up the validation data generator.
-        val_data_generator = self.val_data_generator or image.ImageDataGenerator(
-            preprocessing_function=self.model_spec.preprocess_input
-        )
-
-        val_gen = self.val_generator or val_data_generator.flow_from_directory(
-            self.val_dataset_dir,
-            batch_size=self.batch_size,
-            target_size=self.model_spec.target_size[:2],
-            class_mode='categorical',
-            shuffle=False
-        )
-
         # Initialize the model instance.
         if self.checkpoint_path is not None:
             self.model = load_model(self.checkpoint_path)
@@ -162,17 +130,17 @@ class Trainer(object):
                 self.top_layers.append(Dense(self.num_classes, name='dense'))
 
                 # Set Activation Layer
-                if self.sigmoid:
+                if self.activation == 'sigmoid':
                     self.top_layers.append(Activation('sigmoid', name='act_sigmoid'))
-                else:
+                elif self.activation == 'softmax':
                     self.top_layers.append(Activation('softmax', name='act_softmax'))
 
             # Layer Assembly
             for i, layer in enumerate(self.top_layers):
                 if i == 0:
-                    self.top_layers[i] == layer(self.model.output)
+                   self.top_layers[i] = layer(self.model.output)
                 else:
-                    self.top_layers[i] = layer(self.top_layers[i-1])
+                   self.top_layers[i] = layer(self.top_layers[i - 1])
 
             # Final Model
             self.model = Model(self.model.input, self.top_layers)
@@ -195,6 +163,40 @@ class Trainer(object):
 
         if not os.path.exists(self.output_model_dir):
             os.makedirs(self.output_model_dir)
+
+
+        # Set up the training data generator.
+        train_data_generator = self.train_data_generator or image.ImageDataGenerator(
+            rotation_range=180,
+            width_shift_range=0,
+            height_shift_range=0,
+            preprocessing_function=self.model_spec.preprocess_input,
+            shear_range=0,
+            zoom_range=0.1,
+            horizontal_flip=True,
+            vertical_flip=True,
+            fill_mode='nearest'
+        )
+
+        train_gen = self.train_generator or train_data_generator.flow_from_directory(
+            self.train_dataset_dir,
+            batch_size=self.batch_size,
+            target_size=self.model_spec.target_size[:2],
+            class_mode='categorical'
+        )
+
+        # Set up the validation data generator.
+        val_data_generator = self.val_data_generator or image.ImageDataGenerator(
+            preprocessing_function=self.model_spec.preprocess_input
+        )
+
+        val_gen = self.val_generator or val_data_generator.flow_from_directory(
+            self.val_dataset_dir,
+            batch_size=self.batch_size,
+            target_size=self.model_spec.target_size[:2],
+            class_mode='categorical',
+            shuffle=False
+        )
 
         checkpoint_acc = ModelCheckpoint(
             os.path.join(self.output_model_dir, 'best_model_max_acc.hdf5'),
