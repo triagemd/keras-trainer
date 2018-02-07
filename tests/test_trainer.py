@@ -62,6 +62,8 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
                 'output_model_dir': 'redacted',
                 'pooling': 'avg',
                 'sgd_lr': 0.01,
+                'dropout_rate': 0.0,
+                'activation': 'softmax',
                 'train_dataset_dir': 'redacted',
                 'val_dataset_dir': 'redacted',
                 'verbose': False,
@@ -86,6 +88,19 @@ def test_mobilenet_v1_on_catdog_datasets_with_extra_unsupported_options():
             'model_spec': 'mobilenet_v1',
             'some_other_arg': 'foo'
         })
+
+
+def test_mobilenet_v1_on_catdog_datasets_with_dropout():
+    check_train_on_catdog_datasets({
+        'dropout_rate': 0.5,
+        'model_spec': 'mobilenet_v1'
+    }, {
+        'klass': 'keras.applications.mobilenet.MobileNet',
+        'name': 'mobilenet_v1',
+        'preprocess_args': None,
+        'preprocess_func': 'between_plus_minus_1',
+        'target_size': [224, 224, 3]
+    })
 
 
 def test_mobilenet_v1_on_catdog_datasets():
