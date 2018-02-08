@@ -43,6 +43,7 @@ class Trainer(object):
         'pooling': {'type': str, 'default': 'avg'},
         'activation': {'type': str, 'default': 'softmax'},
         'dropout_rate': {'type': float, 'default': 0.0},
+        'freeze_layers_list': {'type': list, 'default': None},
         'weights': {'type': str, 'default': 'imagenet'},
         'num_gpus': {'type': int, 'default': 0},
         'workers': {'type': int, 'default': 1},
@@ -178,84 +179,89 @@ class Trainer(object):
             # Final Model (last item of self.top_layer contains all of them assembled)
             self.model = Model(self.model.input, self.top_layers[-1])
 
+        if self.freeze_layers_list is not None:
+            for i, layer in enumerate(self.model.layers):
+                if i in self.freeze_layers_list:
+                    layer.trainable = False
+
         # Print the model summary.
         if self.verbose:
             self.model.summary()
 
-        # If num_gpus is higher than one, we parallelize the model
-        if self.num_gpus > 1:
-            self.model = make_parallel(self.model, self.num_gpus)
-
-        # Override the optimizer or use the default.
-        optimizer = self.optimizer or optimizers.SGD(
-            lr=self.sgd_lr,
-            decay=self.decay,
-            momentum=self.momentum,
-            nesterov=True
-        )
-
-        if not os.path.exists(self.output_model_dir):
-            os.makedirs(self.output_model_dir)
-
-        checkpoint_acc = ModelCheckpoint(
-            os.path.join(self.output_model_dir, 'best_model_max_acc.hdf5'),
-            verbose=1,
-            monitor='val_acc',
-            save_best_only=True,
-            save_weights_only=False,
-            mode='max'
-        )
-        self.callback_list.append(checkpoint_acc)
-
-        checkpoint_loss = ModelCheckpoint(
-            os.path.join(self.output_model_dir, 'best_model_min_loss.hdf5'),
-            verbose=1,
-            monitor='val_loss',
-            save_best_only=True,
-            save_weights_only=False,
-            mode='min'
-        )
-        self.callback_list.append(checkpoint_loss)
-
-        tensorboard = TensorBoard(
-            log_dir=self.output_logs_dir,
-            histogram_freq=0,
-            write_graph=True,
-            write_images=True
-        )
-        tensorboard.set_model(self.model)
-        self.callback_list.append(tensorboard)
-
-        self.model.compile(
-            optimizer=optimizer,
-            loss=self.loss_function,
-            metrics=self.metrics
-        )
-
-        self.history = self.model.fit_generator(
-            train_gen,
-            verbose=1,
-            steps_per_epoch=train_gen.samples // self.batch_size,
-            epochs=self.epochs,
-            callbacks=self.callback_list,
-            validation_data=val_gen,
-            validation_steps=val_gen.samples // self.batch_size,
-            workers=self.workers,
-            class_weight=self.class_weights,
-            max_queue_size=self.max_queue_size
-        )
-
-        self.model.save(os.path.join(self.output_model_dir, 'final.hdf5'))
-
-        with open(os.path.join(self.output_model_dir, 'training.json'), 'w') as file:
-            safe_options = {}
-            for key, value in self.context['options'].items():
-                if value is None:
-                    continue
-                try:
-                    json.dumps(value)
-                    safe_options[key] = value
-                except TypeError:
-                    continue
-            self.context['options'] = safe_options
-            file.write(json.dumps(self.context, indent=True, sort_keys=True))
+        # # If num_gpus is higher than one, we parallelize the model
+        # if self.num_gpus > 1:
+        #     self.model = make_parallel(self.model, self.num_gpus)
+        #
+        # # Override the optimizer or use the default.
+        # optimizer = self.optimizer or optimizers.SGD(
+        #     lr=self.sgd_lr,
+        #     decay=self.decay,
+        #     momentum=self.momentum,
+        #     nesterov=True
+        # )
+        #
+        # if not os.path.exists(self.output_model_dir):
+        #     os.makedirs(self.output_model_dir)
+        #
+        # checkpoint_acc = ModelCheckpoint(
+        #     os.path.join(self.output_model_dir, 'best_model_max_acc.hdf5'),
+        #     verbose=1,
+        #     monitor='val_acc',
+        #     save_best_only=True,
+        #     save_weights_only=False,
+        #     mode='max'
+        # )
+        # self.callback_list.append(checkpoint_acc)
+        #
+        # checkpoint_loss = ModelCheckpoint(
+        #     os.path.join(self.output_model_dir, 'best_model_min_loss.hdf5'),
+        #     verbose=1,
+        #     monitor='val_loss',
+        #     save_best_only=True,
+        #     save_weights_only=False,
+        #     mode='min'
+        # )
+        # self.callback_list.append(checkpoint_loss)
+        #
+        # tensorboard = TensorBoard(
+        #     log_dir=self.output_logs_dir,
+        #     histogram_freq=0,
+        #     write_graph=True,
+        #     write_images=True
+        # )
+        # tensorboard.set_model(self.model)
+        # self.callback_list.append(tensorboard)
+        #
+        # self.model.compile(
+        #     optimizer=optimizer,
+        #     loss=self.loss_function,
+        #     metrics=self.metrics
+        # )
+        #
+        # self.history = self.model.fit_generator(
+        #     train_gen,
+        #     verbose=1,
+        #     steps_per_epoch=train_gen.samples // self.batch_size,
+        #     epochs=self.epochs,
+        #     callbacks=self.callback_list,
+        #     validation_data=val_gen,
+        #     validation_steps=val_gen.samples // self.batch_size,
+        #     workers=self.workers,
+        #     class_weight=self.class_weights,
+        #     max_queue_size=self.max_queue_size
+        # )
+        #
+        # self.model.save(os.path.join(self.output_model_dir, 'final.hdf5'))
+        #
+        # with open(os.path.join(self.output_model_dir, 'training.json'), 'w') as file:
+        #     safe_options = {}
+        #     for key, value in self.context['options'].items():
+        #         if value is None:
+        #             continue
+        #         try:
+        #             json.dumps(value)
+        #             safe_options[key] = value
+        #         except TypeError:
+        #             continue
+        #     self.context['options'] = safe_options
+        #     file.write(json.dumps(self.context, indent=True, sort_keys=True))
