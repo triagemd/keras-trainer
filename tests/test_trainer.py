@@ -34,7 +34,7 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
         for path in actual:
             assert path.startswith('events.out.tfevents.')
 
-        with open(os.path.join(output_model_dir, 'training.json')) as file:
+        with open(os.path.join(output_model_dir, 'training_options.json')) as file:
             actual = json.loads(file.read())
         actual['options']['output_logs_dir'] = 'redacted'
         actual['options']['output_model_dir'] = 'redacted'

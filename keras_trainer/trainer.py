@@ -34,7 +34,7 @@ class Trainer(object):
         'callback_list': {'type': list, 'default': []},
         'class_weights': {'type': None, 'default': None},
         'loss_function': {'type': str, 'default': 'categorical_crossentropy'},
-        'metrics': {'type': list, 'default': ['accuracy', ]},
+        'metrics': {'type': list, 'default': ['accuracy']},
         'batch_size': {'type': int, 'default': 1},
         'epochs': {'type': int, 'default': 1},
         'decay': {'type': float, 'default': 0.0005},
@@ -43,6 +43,7 @@ class Trainer(object):
         'pooling': {'type': str, 'default': 'avg'},
         'activation': {'type': str, 'default': 'softmax'},
         'dropout_rate': {'type': float, 'default': 0.0},
+        'freeze_layers_list': {'type': None, 'default': None},
         'weights': {'type': str, 'default': 'imagenet'},
         'num_gpus': {'type': int, 'default': 0},
         'workers': {'type': int, 'default': 1},
@@ -178,6 +179,11 @@ class Trainer(object):
             # Final Model (last item of self.top_layer contains all of them assembled)
             self.model = Model(self.model.input, self.top_layers[-1])
 
+        if self.freeze_layers_list is not None:
+            for i, layer in enumerate(self.model.layers):
+                if i in self.freeze_layers_list:
+                    layer.trainable = False
+
         # Print the model summary.
         if self.verbose:
             self.model.summary()
@@ -198,7 +204,7 @@ class Trainer(object):
             os.makedirs(self.output_model_dir)
 
         checkpoint_acc = ModelCheckpoint(
-            os.path.join(self.output_model_dir, 'best_model_max_acc.hdf5'),
+            os.path.join(self.output_model_dir, 'model_max_acc.hdf5'),
             verbose=1,
             monitor='val_acc',
             save_best_only=True,
@@ -208,7 +214,7 @@ class Trainer(object):
         self.callback_list.append(checkpoint_acc)
 
         checkpoint_loss = ModelCheckpoint(
-            os.path.join(self.output_model_dir, 'best_model_min_loss.hdf5'),
+            os.path.join(self.output_model_dir, 'model_min_loss.hdf5'),
             verbose=1,
             monitor='val_loss',
             save_best_only=True,
@@ -245,9 +251,9 @@ class Trainer(object):
             max_queue_size=self.max_queue_size
         )
 
-        self.model.save(os.path.join(self.output_model_dir, 'final.hdf5'))
+        self.model.save(os.path.join(self.output_model_dir, 'final_model.hdf5'))
 
-        with open(os.path.join(self.output_model_dir, 'training.json'), 'w') as file:
+        with open(os.path.join(self.output_model_dir, 'training_options.json'), 'w') as file:
             safe_options = {}
             for key, value in self.context['options'].items():
                 if value is None:
