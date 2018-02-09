@@ -204,7 +204,7 @@ class Trainer(object):
             os.makedirs(self.output_model_dir)
 
         checkpoint_acc = ModelCheckpoint(
-            os.path.join(self.output_model_dir, 'best_model_max_acc.hdf5'),
+            os.path.join(self.output_model_dir, 'model_max_acc.hdf5'),
             verbose=1,
             monitor='val_acc',
             save_best_only=True,
@@ -214,7 +214,7 @@ class Trainer(object):
         self.callback_list.append(checkpoint_acc)
 
         checkpoint_loss = ModelCheckpoint(
-            os.path.join(self.output_model_dir, 'best_model_min_loss.hdf5'),
+            os.path.join(self.output_model_dir, 'model_min_loss.hdf5'),
             verbose=1,
             monitor='val_loss',
             save_best_only=True,
@@ -251,9 +251,9 @@ class Trainer(object):
             max_queue_size=self.max_queue_size
         )
 
-        self.model.save(os.path.join(self.output_model_dir, 'final.hdf5'))
+        self.model.save(os.path.join(self.output_model_dir, 'final_model.hdf5'))
 
-        with open(os.path.join(self.output_model_dir, 'training.json'), 'w') as file:
+        with open(os.path.join(self.output_model_dir, 'training_options.json'), 'w') as file:
             safe_options = {}
             for key, value in self.context['options'].items():
                 if value is None:
