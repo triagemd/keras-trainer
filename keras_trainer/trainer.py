@@ -147,7 +147,7 @@ class Trainer(object):
 
         # Freeze layers if contained in list
         if self.freeze_layers_list is not None:
-            for i, layer in enumerate(self.freeze_layers_list):
+            for layer in self.freeze_layers_list:
                 if isinstance(layer, int):
                     self.model.layers[layer].trainable = False
                 elif isinstance(layer, str):
