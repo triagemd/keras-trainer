@@ -24,6 +24,7 @@ class Trainer(object):
         'val_dataset_dir': {'type': str},
         'output_model_dir': {'type': str},
         'output_logs_dir': {'type': str},
+        'input_shape': {'type': None, 'default': None},
         'checkpoint_path': {'type': str, 'default': None},
         'train_data_generator': {'type': None, 'default': None},
         'val_data_generator': {'type': None, 'default': None},
@@ -83,47 +84,12 @@ class Trainer(object):
             'options': options
         }
 
-    def run(self):
-
-        # Set up the training data generator.
-        train_data_generator = self.train_data_generator or image.ImageDataGenerator(
-            rotation_range=180,
-            width_shift_range=0,
-            height_shift_range=0,
-            preprocessing_function=self.model_spec.preprocess_input,
-            shear_range=0,
-            zoom_range=0.1,
-            horizontal_flip=True,
-            vertical_flip=True,
-            fill_mode='nearest'
-        )
-
-        train_gen = self.train_generator or train_data_generator.flow_from_directory(
-            self.train_dataset_dir,
-            batch_size=self.batch_size,
-            target_size=self.model_spec.target_size[:2],
-            class_mode='categorical'
-        )
-
-        # Set up the validation data generator.
-        val_data_generator = self.val_data_generator or image.ImageDataGenerator(
-            preprocessing_function=self.model_spec.preprocess_input
-        )
-
-        val_gen = self.val_generator or val_data_generator.flow_from_directory(
-            self.val_dataset_dir,
-            batch_size=self.batch_size,
-            target_size=self.model_spec.target_size[:2],
-            class_mode='categorical',
-            shuffle=False
-        )
-
-        # Initialize the model instance.
+        # Initialize the model instance
         if self.checkpoint_path is not None:
             self.model = load_model(self.checkpoint_path)
         else:
             if self.model_spec.klass == MobileNet:
-                # Initialize the base with valid target_size.
+                # Initialize the base with valid target_size
                 model_kwargs = {
                     'input_shape': (224, 224, 3),
                     'weights': self.weights,
@@ -133,7 +99,7 @@ class Trainer(object):
                 model_kwargs.update(self.model_kwargs)
                 self.model = self.model_spec.klass(**model_kwargs)
 
-                # Expand the base model to match the spec target_size.
+                # Expand the base model to match the spec target_size
                 model_kwargs.update({
                     'input_shape': self.model_spec.target_size,
                     'weights': None
@@ -143,8 +109,9 @@ class Trainer(object):
                     expanded_model.layers[i].set_weights(self.model.layers[i].get_weights())
                 self.model = expanded_model
             else:
+                # Input Shape = None to be able to process arbitrary input size images
                 self.model = self.model_spec.klass(
-                    input_shape=self.model_spec.target_size,
+                    input_shape=self.input_shape or self.model_spec.target_size,
                     weights=self.weights,
                     include_top=False,
                     pooling=self.pooling
@@ -179,10 +146,13 @@ class Trainer(object):
             # Final Model (last item of self.top_layer contains all of them assembled)
             self.model = Model(self.model.input, self.top_layers[-1])
 
+        # Freeze layers if contained in list
         if self.freeze_layers_list is not None:
-            for i, layer in enumerate(self.model.layers):
-                if i in self.freeze_layers_list:
-                    layer.trainable = False
+            for layer in self.freeze_layers_list:
+                if isinstance(layer, int):
+                    self.model.layers[layer].trainable = False
+                elif isinstance(layer, str):
+                    self.model.get_layer(layer).trainable = False
 
         # Print the model summary.
         if self.verbose:
@@ -193,7 +163,7 @@ class Trainer(object):
             self.model = make_parallel(self.model, self.num_gpus)
 
         # Override the optimizer or use the default.
-        optimizer = self.optimizer or optimizers.SGD(
+        self.optimizer = self.optimizer or optimizers.SGD(
             lr=self.sgd_lr,
             decay=self.decay,
             momentum=self.momentum,
@@ -203,6 +173,41 @@ class Trainer(object):
         if not os.path.exists(self.output_model_dir):
             os.makedirs(self.output_model_dir)
 
+        # Set up the training data generator.
+        self.train_data_generator = self.train_data_generator or image.ImageDataGenerator(
+            rotation_range=180,
+            width_shift_range=0,
+            height_shift_range=0,
+            preprocessing_function=self.model_spec.preprocess_input,
+            shear_range=0,
+            zoom_range=0.1,
+            horizontal_flip=True,
+            vertical_flip=True,
+            fill_mode='nearest'
+        )
+
+        self.train_gen = self.train_generator or self.train_data_generator.flow_from_directory(
+            self.train_dataset_dir,
+            batch_size=self.batch_size,
+            target_size=self.model_spec.target_size[:2],
+            class_mode='categorical'
+        )
+
+        # Set up the validation data generator.
+        self.val_data_generator = self.val_data_generator or image.ImageDataGenerator(
+            preprocessing_function=self.model_spec.preprocess_input
+        )
+
+        self.val_gen = self.val_generator or self.val_data_generator.flow_from_directory(
+            self.val_dataset_dir,
+            batch_size=self.batch_size,
+            target_size=self.model_spec.target_size[:2],
+            class_mode='categorical',
+            shuffle=False
+        )
+
+    def run(self):
+        # Set Checkpoint to save Highest Accuracy Model
         checkpoint_acc = ModelCheckpoint(
             os.path.join(self.output_model_dir, 'model_max_acc.hdf5'),
             verbose=1,
@@ -213,6 +218,7 @@ class Trainer(object):
         )
         self.callback_list.append(checkpoint_acc)
 
+        # Set Checkpoint to save Minimum Loss Model
         checkpoint_loss = ModelCheckpoint(
             os.path.join(self.output_model_dir, 'model_min_loss.hdf5'),
             verbose=1,
@@ -223,6 +229,7 @@ class Trainer(object):
         )
         self.callback_list.append(checkpoint_loss)
 
+        # Set Tensorboard Visualization
         tensorboard = TensorBoard(
             log_dir=self.output_logs_dir,
             histogram_freq=0,
@@ -232,27 +239,31 @@ class Trainer(object):
         tensorboard.set_model(self.model)
         self.callback_list.append(tensorboard)
 
+        # Compile the model
         self.model.compile(
-            optimizer=optimizer,
+            optimizer=self.optimizer,
             loss=self.loss_function,
             metrics=self.metrics
         )
 
+        # Model training
         self.history = self.model.fit_generator(
-            train_gen,
+            self.train_gen,
             verbose=1,
-            steps_per_epoch=train_gen.samples // self.batch_size,
+            steps_per_epoch=self.train_gen.samples // self.batch_size,
             epochs=self.epochs,
             callbacks=self.callback_list,
-            validation_data=val_gen,
-            validation_steps=val_gen.samples // self.batch_size,
+            validation_data=self.val_gen,
+            validation_steps=self.val_gen.samples // self.batch_size,
             workers=self.workers,
             class_weight=self.class_weights,
             max_queue_size=self.max_queue_size
         )
 
+        # Save last model
         self.model.save(os.path.join(self.output_model_dir, 'final_model.hdf5'))
 
+        # Save training options
         with open(os.path.join(self.output_model_dir, 'training_options.json'), 'w') as file:
             safe_options = {}
             for key, value in self.context['options'].items():
