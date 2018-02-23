@@ -185,7 +185,7 @@ class Trainer(object):
             fill_mode='nearest'
         )
 
-        self.train_gen = self.train_generator or train_data_generator.flow_from_directory(
+        self.train_gen = self.train_generator or self.train_data_generator.flow_from_directory(
             self.train_dataset_dir,
             batch_size=self.batch_size,
             target_size=self.model_spec.target_size[:2],
@@ -197,7 +197,7 @@ class Trainer(object):
             preprocessing_function=self.model_spec.preprocess_input
         )
 
-        self.val_gen = self.val_generator or val_data_generator.flow_from_directory(
+        self.val_gen = self.val_generator or self.val_data_generator.flow_from_directory(
             self.val_dataset_dir,
             batch_size=self.batch_size,
             target_size=self.model_spec.target_size[:2],
