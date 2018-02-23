@@ -24,6 +24,7 @@ class Trainer(object):
         'val_dataset_dir': {'type': str},
         'output_model_dir': {'type': str},
         'output_logs_dir': {'type': str},
+        'input_shape': {'type': None, 'default': None},
         'checkpoint_path': {'type': str, 'default': None},
         'train_data_generator': {'type': None, 'default': None},
         'val_data_generator': {'type': None, 'default': None},
@@ -110,7 +111,7 @@ class Trainer(object):
             else:
                 # Input Shape = None to be able to process arbitrary input size images
                 self.model = self.model_spec.klass(
-                    input_shape=None,
+                    input_shape=self.input_shape or self.model_spec.target_size,
                     weights=self.weights,
                     include_top=False,
                     pooling=self.pooling
