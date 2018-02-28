@@ -263,6 +263,10 @@ class Trainer(object):
         # Save last model
         self.model.save(os.path.join(self.output_model_dir, 'final_model.hdf5'))
 
+        # Dump model_spec.json file
+        with open(os.path.join(self.output_model_dir, 'model_spec.json'), 'w') as file:
+            file.write(json.dumps(self.model_spec.as_json(), indent=True, sort_keys=True))
+
         # Save training options
         with open(os.path.join(self.output_model_dir, 'training_options.json'), 'w') as file:
             safe_options = {}

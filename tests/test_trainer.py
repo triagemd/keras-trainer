@@ -11,7 +11,7 @@ from keras_model_specs import ModelSpec
 from keras_trainer import Trainer
 
 
-def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expected_model_files=4):
+def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expected_model_files=5):
     with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
         trainer = Trainer(
             train_dataset_dir=os.path.abspath('tests/files/catdog/train'),
