@@ -175,7 +175,7 @@ class Trainer(object):
             os.makedirs(self.output_model_dir)
 
         # To complement Keras message
-        print ('Training data')
+        print('Training data')
 
         # Set up the training data generator.
         self.train_data_generator = self.train_data_generator or image.ImageDataGenerator(
@@ -198,7 +198,7 @@ class Trainer(object):
         )
 
         # To complement Keras message
-        print ('Validation data')
+        print('Validation data')
 
         # Set up the validation data generator.
         self.val_data_generator = self.val_data_generator or image.ImageDataGenerator(
