@@ -4,6 +4,7 @@ import platform
 import keras
 import tensorflow
 import copy
+import numbers
 
 from six import string_types
 from keras import optimizers
@@ -24,6 +25,7 @@ class Trainer(object):
         'val_dataset_dir': {'type': str},
         'output_model_dir': {'type': str},
         'output_logs_dir': {'type': str},
+        'include_top': {'type': bool, 'default': False},
         'input_shape': {'type': None, 'default': None},
         'checkpoint_path': {'type': str, 'default': None},
         'train_data_generator': {'type': None, 'default': None},
@@ -93,7 +95,7 @@ class Trainer(object):
                 model_kwargs = {
                     'input_shape': (224, 224, 3),
                     'weights': self.weights,
-                    'include_top': False,
+                    'include_top': self.include_top,
                     'pooling': self.pooling
                 }
                 model_kwargs.update(self.model_kwargs)
@@ -101,7 +103,7 @@ class Trainer(object):
 
                 # Expand the base model to match the spec target_size
                 model_kwargs.update({
-                    'input_shape': self.model_spec.target_size,
+                    'input_shape': self.input_shape or self.model_spec.target_size,
                     'weights': None
                 })
                 expanded_model = self.model_spec.klass(**model_kwargs)
@@ -109,11 +111,10 @@ class Trainer(object):
                     expanded_model.layers[i].set_weights(self.model.layers[i].get_weights())
                 self.model = expanded_model
             else:
-                # Input Shape = None to be able to process arbitrary input size images
                 self.model = self.model_spec.klass(
                     input_shape=self.input_shape or self.model_spec.target_size,
                     weights=self.weights,
-                    include_top=False,
+                    include_top=self.include_top,
                     pooling=self.pooling
                 )
 
@@ -149,7 +150,7 @@ class Trainer(object):
         # Freeze layers if contained in list
         if self.freeze_layers_list is not None:
             for layer in self.freeze_layers_list:
-                if isinstance(layer, int):
+                if isinstance(layer, numbers.Number):
                     self.model.layers[layer].trainable = False
                 elif isinstance(layer, str):
                     self.model.get_layer(layer).trainable = False
@@ -173,6 +174,9 @@ class Trainer(object):
         if not os.path.exists(self.output_model_dir):
             os.makedirs(self.output_model_dir)
 
+        # To complement Keras message
+        print ('Training data')
+
         # Set up the training data generator.
         self.train_data_generator = self.train_data_generator or image.ImageDataGenerator(
             rotation_range=180,
@@ -192,6 +196,9 @@ class Trainer(object):
             target_size=self.model_spec.target_size[:2],
             class_mode='categorical'
         )
+
+        # To complement Keras message
+        print ('Validation data')
 
         # Set up the validation data generator.
         self.val_data_generator = self.val_data_generator or image.ImageDataGenerator(
