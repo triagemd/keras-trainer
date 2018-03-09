@@ -49,6 +49,7 @@ OPTIONS = {
         'num_gpus': {'type': int, 'default': 0},
         'workers': {'type': int, 'default': 1},
         'max_queue_size': {'type': int, 'default': 16},
+        'num_classes': {'type': int, 'default': None},
         'verbose': {'type': str, 'default': False},
         'model_kwargs': {'type': dict, 'default': {}}
     }

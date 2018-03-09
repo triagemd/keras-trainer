@@ -51,6 +51,7 @@ class Trainer(object):
         'num_gpus': {'type': int, 'default': 0},
         'workers': {'type': int, 'default': 1},
         'max_queue_size': {'type': int, 'default': 16},
+        'num_classes': {'type': int, 'default': None},
         'verbose': {'type': str, 'default': False},
         'model_kwargs': {'type': dict, 'default': {}}
     }
@@ -97,12 +98,19 @@ class Trainer(object):
             fill_mode='nearest'
         )
 
-        self.train_gen = self.train_generator or self.train_data_generator.flow_from_directory(
-            self.train_dataset_dir,
-            batch_size=self.batch_size,
-            target_size=self.model_spec.target_size[:2],
-            class_mode='categorical'
-        )
+        if not self.train_generator:
+            self.train_gen = self.train_data_generator.flow_from_directory(
+                self.train_dataset_dir,
+                batch_size=self.batch_size,
+                target_size=self.model_spec.target_size[:2],
+                class_mode='categorical'
+            )
+            self.num_classes = self.num_classes or self.train_gen.num_classes
+        else:
+            self.train_gen = self.train_generator
+
+        if self.num_classes is None and self.top_layers is None:
+            raise ValueError('num_classes must be set to use a custom train_generator with the default fully connected + softmax top_layers')
 
         # Set up the validation data generator.
         print('Validation data')  # To complement Keras message
@@ -118,8 +126,6 @@ class Trainer(object):
             class_mode='categorical',
             shuffle=False
         )
-
-        self.num_classes = len(self.train_gen.class_indices)
 
         # Initialize the model instance
         if self.checkpoint_path is not None:
