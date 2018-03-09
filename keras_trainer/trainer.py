@@ -51,7 +51,6 @@ class Trainer(object):
         'num_gpus': {'type': int, 'default': 0},
         'workers': {'type': int, 'default': 1},
         'max_queue_size': {'type': int, 'default': 16},
-        'num_classes': {'type': int, 'default': None},
         'verbose': {'type': str, 'default': False},
         'model_kwargs': {'type': dict, 'default': {}}
     }
@@ -72,9 +71,6 @@ class Trainer(object):
         elif isinstance(self.model_spec, dict):
             self.model_spec = ModelSpec.get(self.model_spec['name'], **self.model_spec)
 
-        if self.num_classes is None and self.top_layers is None:
-            raise ValueError('num_classes must be set to use the default fully connected + softmax top_layers')
-
         options = dict([(key, getattr(self, key)) for key in self.OPTIONS.keys() if getattr(self, key) is not None])
         options['model_spec'] = self.model_spec.as_json()
         self.context = {
@@ -85,6 +81,45 @@ class Trainer(object):
             },
             'options': options
         }
+
+        # Set up the training data generator.
+        print('Training data')  # To complement Keras message
+
+        self.train_data_generator = self.train_data_generator or image.ImageDataGenerator(
+            rotation_range=180,
+            width_shift_range=0,
+            height_shift_range=0,
+            preprocessing_function=self.model_spec.preprocess_input,
+            shear_range=0,
+            zoom_range=0.1,
+            horizontal_flip=True,
+            vertical_flip=True,
+            fill_mode='nearest'
+        )
+
+        self.train_gen = self.train_generator or self.train_data_generator.flow_from_directory(
+            self.train_dataset_dir,
+            batch_size=self.batch_size,
+            target_size=self.model_spec.target_size[:2],
+            class_mode='categorical'
+        )
+
+        # Set up the validation data generator.
+        print('Validation data')  # To complement Keras message
+
+        self.val_data_generator = self.val_data_generator or image.ImageDataGenerator(
+            preprocessing_function=self.model_spec.preprocess_input
+        )
+
+        self.val_gen = self.val_generator or self.val_data_generator.flow_from_directory(
+            self.val_dataset_dir,
+            batch_size=self.batch_size,
+            target_size=self.model_spec.target_size[:2],
+            class_mode='categorical',
+            shuffle=False
+        )
+
+        self.num_classes = len(self.train_gen.class_indices)
 
         # Initialize the model instance
         if self.checkpoint_path is not None:
@@ -173,45 +208,6 @@ class Trainer(object):
 
         if not os.path.exists(self.output_model_dir):
             os.makedirs(self.output_model_dir)
-
-        # To complement Keras message
-        print('Training data')
-
-        # Set up the training data generator.
-        self.train_data_generator = self.train_data_generator or image.ImageDataGenerator(
-            rotation_range=180,
-            width_shift_range=0,
-            height_shift_range=0,
-            preprocessing_function=self.model_spec.preprocess_input,
-            shear_range=0,
-            zoom_range=0.1,
-            horizontal_flip=True,
-            vertical_flip=True,
-            fill_mode='nearest'
-        )
-
-        self.train_gen = self.train_generator or self.train_data_generator.flow_from_directory(
-            self.train_dataset_dir,
-            batch_size=self.batch_size,
-            target_size=self.model_spec.target_size[:2],
-            class_mode='categorical'
-        )
-
-        # To complement Keras message
-        print('Validation data')
-
-        # Set up the validation data generator.
-        self.val_data_generator = self.val_data_generator or image.ImageDataGenerator(
-            preprocessing_function=self.model_spec.preprocess_input
-        )
-
-        self.val_gen = self.val_generator or self.val_data_generator.flow_from_directory(
-            self.val_dataset_dir,
-            batch_size=self.batch_size,
-            target_size=self.model_spec.target_size[:2],
-            class_mode='categorical',
-            shuffle=False
-        )
 
     def run(self):
         # Set Checkpoint to save Highest Accuracy Model
