@@ -2,7 +2,7 @@
 
 ## Keras Trainer
 
-An abstraction to train Keras CNN models for image classification. To use it is required to have also installed the `keras-model-specs` package. 
+An abstraction to train Keras CNN models for image classification. To use it is required to have also installed the `keras-model-specs` package.
 
 The list of models supported is the following:
 
