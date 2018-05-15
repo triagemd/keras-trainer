@@ -15,6 +15,7 @@ setup(
         'Keras>=2.1.6',
         'h5py',
         'Pillow',
+        'tensorflow>=1.6.0',
         'keras-model-specs>=0.0.24',
     ]
 )
