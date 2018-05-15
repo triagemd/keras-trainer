@@ -4,6 +4,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
 
 # C extensions
 *.so
@@ -35,3 +36,4 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.ipynb_checkpoints
