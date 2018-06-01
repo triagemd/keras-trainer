@@ -4,7 +4,6 @@ import platform
 import keras
 import tensorflow
 import copy
-import numbers
 
 from six import string_types
 from keras import optimizers
@@ -191,7 +190,7 @@ class Trainer(object):
         # Freeze layers if contained in list
         if self.freeze_layers_list is not None:
             for layer in self.freeze_layers_list:
-                if isinstance(layer, numbers.Number):
+                if isinstance(layer, int):
                     self.model.layers[layer].trainable = False
                 elif isinstance(layer, str):
                     self.model.get_layer(layer).trainable = False
