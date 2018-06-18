@@ -94,7 +94,7 @@ def test_mobilenet_v1_on_catdog_datasets_with_dropout():
         'dropout_rate': 0.5,
         'model_spec': 'mobilenet_v1'
     }, {
-        'klass': 'keras.applications.mobilenet.MobileNet',
+        'klass': 'keras_applications.mobilenet.MobileNet',
         'name': 'mobilenet_v1',
         'preprocess_args': None,
         'preprocess_func': 'between_plus_minus_1',
@@ -106,7 +106,7 @@ def test_mobilenet_v1_on_catdog_datasets():
     check_train_on_catdog_datasets({
         'model_spec': 'mobilenet_v1'
     }, {
-        'klass': 'keras.applications.mobilenet.MobileNet',
+        'klass': 'keras_applications.mobilenet.MobileNet',
         'name': 'mobilenet_v1',
         'preprocess_args': None,
         'preprocess_func': 'between_plus_minus_1',
@@ -118,13 +118,13 @@ def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override():
     check_train_on_catdog_datasets({
         'model_spec': ModelSpec.get(
             'mobilenet_v1',
-            klass='keras.applications.mobilenet.MobileNet',
+            klass='keras_applications.mobilenet.MobileNet',
             target_size=[512, 512, 3],
             preprocess_func='mean_subtraction',
             preprocess_args=[1, 2, 3]
         )
     }, {
-        'klass': 'keras.applications.mobilenet.MobileNet',
+        'klass': 'keras_applications.mobilenet.MobileNet',
         'name': 'mobilenet_v1',
         'preprocess_args': [1, 2, 3],
         'preprocess_func': 'mean_subtraction',
@@ -136,7 +136,7 @@ def test_resnet50_on_catdog_datasets():
     check_train_on_catdog_datasets({
         'model_spec': ModelSpec.get('resnet50', preprocess_args=[1, 2, 3])
     }, {
-        'klass': 'keras.applications.resnet50.ResNet50',
+        'klass': 'keras_applications.resnet50.ResNet50',
         'name': 'resnet50',
         'preprocess_args': [1, 2, 3],
         'preprocess_func': 'mean_subtraction',

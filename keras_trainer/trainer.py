@@ -11,7 +11,7 @@ from keras.models import Model, load_model
 from keras.layers import Dense, Activation, Dropout
 from keras.preprocessing import image
 from keras.callbacks import TensorBoard, ModelCheckpoint
-from keras.applications.mobilenet import MobileNet
+from keras_applications.mobilenet import MobileNet
 from keras_model_specs import ModelSpec
 from keras_trainer.parallel import make_parallel
 
