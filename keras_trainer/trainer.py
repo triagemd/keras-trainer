@@ -36,6 +36,7 @@ class Trainer(object):
         'callback_list': {'type': list, 'default': []},
         'class_weights': {'type': None, 'default': None},
         'loss_function': {'type': str, 'default': 'categorical_crossentropy'},
+        'loss_weights': {'type': None, 'default': None},
         'metrics': {'type': list, 'default': ['accuracy']},
         'batch_size': {'type': int, 'default': 1},
         'epochs': {'type': int, 'default': 1},
@@ -251,7 +252,8 @@ class Trainer(object):
         self.model.compile(
             optimizer=self.optimizer,
             loss=self.loss_function,
-            metrics=self.metrics
+            metrics=self.metrics,
+            loss_weights=self.loss_weights
         )
 
         # Model training
