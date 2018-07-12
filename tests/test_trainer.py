@@ -9,6 +9,7 @@ from backports.tempfile import TemporaryDirectory
 from stored import list_files
 from keras_model_specs import ModelSpec
 from keras_trainer import Trainer
+from keras_applications import mobilenet
 
 
 def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expected_model_files=5):
@@ -141,4 +142,35 @@ def test_resnet50_on_catdog_datasets():
         'preprocess_args': [1, 2, 3],
         'preprocess_func': 'mean_subtraction',
         'target_size': [224, 224, 3]
+    })
+
+
+def test_custom_model_on_catdog_datasets():
+    model = mobilenet.MobileNet(alpha=0.25, include_top=False)
+    top_layers = []
+    # Set Dense Layer
+    top_layers.append(keras.layers.Dense(2, name='dense'))
+    # Set Activation Layer
+    top_layers.append(keras.layers.Activation('softmax', name='act_softmax'))
+
+    # Layer Assembling
+    for i, layer in enumerate(top_layers):
+        if i == 0:
+            top_layers[i] = layer(model.output)
+        else:
+            top_layers[i] = layer(top_layers[i - 1])
+
+    # Final Model (last item of self.top_layer contains all of them assembled)
+    model = keras.models.Model(model.input, top_layers[-1])
+    check_train_on_catdog_datasets({'custom_model': model,
+                                    'model_spec': ModelSpec.get('mobilenet_custom', preprocess_args=[1, 2, 3],
+                                                                preprocess_func='mean_subtraction',
+                                                                target_size=[224, 224, 3])
+                                    },
+                                   {
+                                       'klass': None,
+                                       'name': 'mobilenet_custom',
+                                       'preprocess_args': [1, 2, 3],
+                                       'preprocess_func': 'mean_subtraction',
+                                       'target_size': [224, 224, 3]
     })
