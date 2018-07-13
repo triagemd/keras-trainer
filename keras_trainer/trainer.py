@@ -24,6 +24,7 @@ class Trainer(object):
         'val_dataset_dir': {'type': str},
         'output_model_dir': {'type': str},
         'output_logs_dir': {'type': str},
+        'custom_model': {'type': None, 'default': None},
         'include_top': {'type': bool, 'default': False},
         'input_shape': {'type': None, 'default': None},
         'checkpoint_path': {'type': str, 'default': None},
@@ -127,10 +128,15 @@ class Trainer(object):
             shuffle=False
         )
 
-        # Initialize the model instance
+        # Load model from a checkpoint
         if self.checkpoint_path is not None:
             self.model = load_model(self.checkpoint_path)
+        # Load a custom model (not supported by keras-model-specs)
+        elif self.custom_model is not None and self.model_spec.klass is None:
+            self.model = self.custom_model
+        # Load a model supported by keras-model-specs
         else:
+            # MobileNet work-around
             if self.model_spec.klass == MobileNet:
                 # Initialize the base with valid target_size
                 model_kwargs = {
@@ -160,12 +166,11 @@ class Trainer(object):
                 )
 
             # If top layers are given include them, else include a Dense Layer with Softmax/Sigmoid
-            # (Dropout optional if dropout_rate entered as parameter)
             if self.top_layers is None:
                 # Init list of layers
                 self.top_layers = []
 
-                # Include Dropout
+                # Include Dropout (optional if dropout_rate entered as parameter)
                 if self.dropout_rate > 0.0:
                     self.top_layers.append(Dropout(self.dropout_rate))
 
@@ -216,7 +221,7 @@ class Trainer(object):
             os.makedirs(self.output_model_dir)
 
     def run(self):
-        # Set Checkpoint to save Highest Accuracy Model
+        # Set Checkpoint to save the model with the highest accuracy
         checkpoint_acc = ModelCheckpoint(
             os.path.join(self.output_model_dir, 'model_max_acc.hdf5'),
             verbose=1,
@@ -227,7 +232,7 @@ class Trainer(object):
         )
         self.callback_list.append(checkpoint_acc)
 
-        # Set Checkpoint to save Minimum Loss Model
+        # Set Checkpoint to save the model with the minimum loss
         checkpoint_loss = ModelCheckpoint(
             os.path.join(self.output_model_dir, 'model_min_loss.hdf5'),
             verbose=1,
@@ -270,7 +275,7 @@ class Trainer(object):
             max_queue_size=self.max_queue_size
         )
 
-        # Save last model
+        # Save model at last epoch
         self.model.save(os.path.join(self.output_model_dir, 'final_model.hdf5'))
 
         # Dump model_spec.json file
