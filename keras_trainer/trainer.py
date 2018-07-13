@@ -136,7 +136,7 @@ class Trainer(object):
             self.model = self.custom_model
         # Load a model supported by keras-model-specs
         else:
-            # MobileNet workaraound
+            # MobileNet work-around
             if self.model_spec.klass == MobileNet:
                 # Initialize the base with valid target_size
                 model_kwargs = {

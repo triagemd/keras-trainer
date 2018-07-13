@@ -68,13 +68,47 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
                 'val_dataset_dir': 'redacted',
                 'verbose': False,
                 'weights': 'imagenet',
-                'workers': 1
+                'workers': 1,
             }
         }
+        if 'custom_model' in trainer_args.keys():
+            del trainer_args['custom_model']
         expected['options'].update(trainer_args)
         expected['options']['model_spec'] = expected_model_spec
 
         assert actual == expected
+
+
+def test_custom_model_on_catdog_datasets():
+    model = mobilenet.MobileNet(alpha=0.25, include_top=False, pooling='avg', input_shape=[224, 224, 3])
+    top_layers = []
+    # Set Dense Layer
+    top_layers.append(keras.layers.Dense(2, name='dense'))
+    # Set Activation Layer
+    top_layers.append(keras.layers.Activation('softmax', name='act_softmax'))
+
+    # Layer Assembling
+    for i, layer in enumerate(top_layers):
+        if i == 0:
+            top_layers[i] = layer(model.output)
+        else:
+            top_layers[i] = layer(top_layers[i - 1])
+
+    # Final Model (last item of self.top_layer contains all of them assembled)
+    model = keras.models.Model(model.input, top_layers[-1])
+    check_train_on_catdog_datasets({'custom_model': model,
+                                    'model_spec': ModelSpec.get('mobilenet_custom', preprocess_args=[1, 2, 3],
+                                                                preprocess_func='mean_subtraction',
+                                                                target_size=[224, 224, 3])
+                                    },
+                                   {
+                                       'klass': None,
+                                       'name': 'mobilenet_custom',
+                                       'preprocess_args': [1, 2, 3],
+                                       'preprocess_func': 'mean_subtraction',
+                                       'target_size': [224, 224, 3]
+                                   }
+                                  )
 
 
 def test_mobilenet_v1_on_catdog_datasets_with_missing_required_options():
@@ -143,34 +177,3 @@ def test_resnet50_on_catdog_datasets():
         'preprocess_func': 'mean_subtraction',
         'target_size': [224, 224, 3]
     })
-
-
-def test_custom_model_on_catdog_datasets():
-    model = mobilenet.MobileNet(alpha=0.25, include_top=False, input_shape=[224, 224, 3])
-    top_layers = []
-    # Set Dense Layer
-    top_layers.append(keras.layers.Dense(2, name='dense'))
-    # Set Activation Layer
-    top_layers.append(keras.layers.Activation('softmax', name='act_softmax'))
-
-    # Layer Assembling
-    for i, layer in enumerate(top_layers):
-        if i == 0:
-            top_layers[i] = layer(model.output)
-        else:
-            top_layers[i] = layer(top_layers[i - 1])
-
-    # Final Model (last item of self.top_layer contains all of them assembled)
-    model = keras.models.Model(model.input, top_layers[-1])
-    check_train_on_catdog_datasets({'custom_model': model,
-                                    'model_spec': ModelSpec.get('mobilenet_custom', preprocess_args=[1, 2, 3],
-                                                                preprocess_func='mean_subtraction',
-                                                                target_size=[224, 224, 3])
-                                    },
-                                   {
-                                       'klass': None,
-                                       'name': 'mobilenet_custom',
-                                       'preprocess_args': [1, 2, 3],
-                                       'preprocess_func': 'mean_subtraction',
-                                       'target_size': [224, 224, 3]
-                                   })
