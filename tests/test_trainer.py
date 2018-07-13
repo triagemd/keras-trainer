@@ -107,8 +107,8 @@ def test_custom_model_on_catdog_datasets():
                                        'preprocess_args': [1, 2, 3],
                                        'preprocess_func': 'mean_subtraction',
                                        'target_size': [224, 224, 3]
-                                   }
-                                  )
+    }
+    )
 
 
 def test_mobilenet_v1_on_catdog_datasets_with_missing_required_options():
