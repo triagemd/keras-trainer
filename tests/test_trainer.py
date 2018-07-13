@@ -146,7 +146,7 @@ def test_resnet50_on_catdog_datasets():
 
 
 def test_custom_model_on_catdog_datasets():
-    model = mobilenet.MobileNet(alpha=0.25, include_top=False)
+    model = mobilenet.MobileNet(alpha=0.25, include_top=False, input_shape=[224, 224, 3])
     top_layers = []
     # Set Dense Layer
     top_layers.append(keras.layers.Dense(2, name='dense'))
@@ -173,4 +173,4 @@ def test_custom_model_on_catdog_datasets():
                                        'preprocess_args': [1, 2, 3],
                                        'preprocess_func': 'mean_subtraction',
                                        'target_size': [224, 224, 3]
-    })
+                                   })
