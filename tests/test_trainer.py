@@ -10,6 +10,7 @@ from stored import list_files
 from keras_model_specs import ModelSpec
 from keras_trainer import Trainer
 from keras_applications import mobilenet
+from keras_trainer.dataloaders import BalancedImageDataGenerator
 
 
 def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expected_model_files=5):
@@ -73,6 +74,9 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
         }
         if 'custom_model' in trainer_args.keys():
             del trainer_args['custom_model']
+        elif 'train_data_generator' in trainer_args.keys():
+            del trainer_args['train_data_generator']
+            
         expected['options'].update(trainer_args)
         expected['options']['model_spec'] = expected_model_spec
 
@@ -109,6 +113,19 @@ def test_custom_model_on_catdog_datasets():
                                        'target_size': [224, 224, 3]
     }
     )
+
+
+def test_mobilenet_v1_on_catdog_datasets_with_balanced_generator():
+    check_train_on_catdog_datasets({
+        'train_data_generator': BalancedImageDataGenerator(),
+        'model_spec': 'mobilenet_v1'
+    }, {
+        'klass': 'keras_applications.mobilenet.MobileNet',
+        'name': 'mobilenet_v1',
+        'preprocess_args': None,
+        'preprocess_func': 'between_plus_minus_1',
+        'target_size': [224, 224, 3]
+    })
 
 
 def test_mobilenet_v1_on_catdog_datasets_with_missing_required_options():
