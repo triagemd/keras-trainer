@@ -11,7 +11,7 @@ backend = get_keras_submodule('backend')
 class BalancedDirectoryIterator(DirectoryIterator):
     '''
     Each sample is selected randomly and with uniform probability, so all the classes are distributed equiprobably.
-    We can have repetition of samples during the same epoch. 
+    We can have repetition of samples during the same epoch.
     '''
 
     def __init__(self, directory, image_data_generator,
@@ -269,6 +269,7 @@ class ImageDataGeneratorSameMultiGT(ImageDataGenerator):
                             subset=None,
                             interpolation='nearest',
                             ):
+
         return DirectoryIteratorSameMultiGT(
             directory, self,
             target_size=target_size, color_mode=color_mode,
