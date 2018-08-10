@@ -221,11 +221,15 @@ class Trainer(object):
             os.makedirs(self.output_model_dir)
 
     def run(self):
+        if isinstance(self.loss_function, list) and len(self.loss_function) > 1:
+            monitor_acc = 'val_' + self.model.layers[-1].name + '_acc'
+        else:
+            monitor_acc = 'val_acc'
         # Set Checkpoint to save the model with the highest accuracy
         checkpoint_acc = ModelCheckpoint(
             os.path.join(self.output_model_dir, 'model_max_acc.hdf5'),
             verbose=1,
-            monitor='val_acc',
+            monitor=monitor_acc,
             save_best_only=True,
             save_weights_only=False,
             mode='max'

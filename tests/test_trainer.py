@@ -10,9 +10,11 @@ from stored import list_files
 from keras_model_specs import ModelSpec
 from keras_trainer import Trainer
 from keras_applications import mobilenet
+from keras_trainer.dataloaders import BalancedImageDataGenerator, ImageDataGeneratorSameMultiGT
+from keras_trainer.losses import entropy_penalty_loss
 
 
-def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expected_model_files=5):
+def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expected_model_files=5, check_opts=True):
     with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
         trainer = Trainer(
             train_dataset_dir=os.path.abspath('tests/files/catdog/train'),
@@ -71,12 +73,12 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
                 'workers': 1,
             }
         }
-        if 'custom_model' in trainer_args.keys():
-            del trainer_args['custom_model']
+
         expected['options'].update(trainer_args)
         expected['options']['model_spec'] = expected_model_spec
 
-        assert actual == expected
+        if check_opts:
+            assert actual == expected
 
 
 def test_custom_model_on_catdog_datasets():
@@ -107,7 +109,61 @@ def test_custom_model_on_catdog_datasets():
                                        'preprocess_args': [1, 2, 3],
                                        'preprocess_func': 'mean_subtraction',
                                        'target_size': [224, 224, 3]
-    }
+    },
+        check_opts=False
+    )
+
+
+def test_custom_model_on_catdog_datasets_with_multi_loss():
+    model = mobilenet.MobileNet(alpha=0.25, include_top=False, pooling='avg', input_shape=[224, 224, 3])
+    top_layers = []
+    # Set Dense Layer
+    top_layers.append(keras.layers.Dense(2, name='dense'))
+    # Set Activation Layer
+    top_layers.append(keras.layers.Activation('softmax', name='act_softmax'))
+
+    # Layer Assembling
+    for i, layer in enumerate(top_layers):
+        if i == 0:
+            top_layers[i] = layer(model.output)
+        else:
+            top_layers[i] = layer(top_layers[i - 1])
+
+    # Final Model (last item of self.top_layer contains all of them assembled)
+    model = keras.models.Model(model.input, [top_layers[-1], top_layers[-1]])
+
+    check_train_on_catdog_datasets({'custom_model': model,
+                                    'train_data_generator': ImageDataGeneratorSameMultiGT(n_outputs=2),
+                                    'val_data_generator': ImageDataGeneratorSameMultiGT(n_outputs=2),
+                                    'loss_function': ['categorical_crossentropy', entropy_penalty_loss],
+                                    'loss_weights': [1.0, 0.25],
+                                    'model_spec': ModelSpec.get('mobilenet_custom_2_outputs', preprocess_args=[1, 2, 3],
+                                                                preprocess_func='mean_subtraction',
+                                                                target_size=[224, 224, 3])
+                                    },
+                                   {
+                                       'klass': None,
+                                       'name': 'mobilenet_custom_2_outputs',
+                                       'preprocess_args': [1, 2, 3],
+                                       'preprocess_func': 'mean_subtraction',
+                                       'target_size': [224, 224, 3]
+    },
+        check_opts=False
+    )
+
+
+def test_mobilenet_v1_on_catdog_datasets_with_balanced_generator():
+    check_train_on_catdog_datasets({
+        'train_data_generator': BalancedImageDataGenerator(),
+        'model_spec': 'mobilenet_v1'
+    }, {
+        'klass': 'keras_applications.mobilenet.MobileNet',
+        'name': 'mobilenet_v1',
+        'preprocess_args': None,
+        'preprocess_func': 'between_plus_minus_1',
+        'target_size': [224, 224, 3]
+    },
+        check_opts=False
     )
 
 
