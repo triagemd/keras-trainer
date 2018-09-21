@@ -4,6 +4,7 @@ import json
 import platform
 import tensorflow
 import keras
+import numpy as np
 
 from backports.tempfile import TemporaryDirectory
 from stored import list_files
@@ -81,6 +82,40 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
             assert actual == expected
 
 
+def check_freeze_layers_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expected_model_files=5, check_opts=True):
+    with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
+        trainer = Trainer(
+            train_dataset_dir=os.path.abspath('tests/files/catdog/train'),
+            val_dataset_dir=os.path.abspath('tests/files/catdog/val'),
+            output_model_dir=output_model_dir,
+            output_logs_dir=output_logs_dir,
+            epochs=1,
+            batch_size=1,
+            model_kwargs={'alpha': 1.0},
+            freeze_layers_list=list(range(1, 10)),
+            **trainer_args
+        )
+        trainer.run()
+
+        assert trainer.model.layers[5].trainable == False
+
+
+def check_freeze_layers_train_on_catdog_datasets_with_float(trainer_args={}, expected_model_spec={}, expected_model_files=5, check_opts=True):
+    with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
+        trainer = Trainer(
+            train_dataset_dir=os.path.abspath('tests/files/catdog/train'),
+            val_dataset_dir=os.path.abspath('tests/files/catdog/val'),
+            output_model_dir=output_model_dir,
+            output_logs_dir=output_logs_dir,
+            epochs=1,
+            batch_size=1,
+            model_kwargs={'alpha': 1.0},
+            freeze_layers_list=np.arange(1, 10, 0.5),
+            **trainer_args
+        )
+        trainer.run()
+
+
 def test_custom_model_on_catdog_datasets():
     model = mobilenet.MobileNet(alpha=0.25, include_top=False, pooling='avg', input_shape=[224, 224, 3])
     top_layers = []
@@ -112,6 +147,28 @@ def test_custom_model_on_catdog_datasets():
     },
         check_opts=False
     )
+
+
+def test_freeze_layers_on_catdog_datasets():
+    check_freeze_layers_train_on_catdog_datasets({
+        'model_spec': 'mobilenet_v1'
+    }, {
+        'klass': 'keras_applications.mobilenet.MobileNet',
+        'name': 'mobilenet_v1',
+        'preprocess_args': None,
+        'preprocess_func': 'between_plus_minus_1',
+        'target_size': [224, 224, 3]
+    })
+    with pytest.raises(ValueError, message="'We do not support freezing layers of type:', <class 'numpy.float64'>'"):
+        check_freeze_layers_train_on_catdog_datasets_with_float({
+            'model_spec': 'mobilenet_v1'
+        }, {
+            'klass': 'keras_applications.mobilenet.MobileNet',
+            'name': 'mobilenet_v1',
+            'preprocess_args': None,
+            'preprocess_func': 'between_plus_minus_1',
+            'target_size': [224, 224, 3]
+        })
 
 
 def test_custom_model_on_catdog_datasets_with_multi_loss():
