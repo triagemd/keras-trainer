@@ -97,7 +97,10 @@ def check_freeze_layers_train_on_catdog_datasets(trainer_args={}, expected_model
         )
         trainer.run()
 
-        assert trainer.model.layers[5].trainable == False
+        expected = False
+        actual = trainer.model.layers[5].trainable
+
+        assert actual == expected
 
 
 def check_freeze_layers_train_on_catdog_datasets_with_float(trainer_args={}, expected_model_spec={}, expected_model_files=5, check_opts=True):
