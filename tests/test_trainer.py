@@ -82,7 +82,7 @@ def check_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expe
             assert actual == expected
 
 
-def check_freeze_layers_train_on_catdog_datasets(trainer_args={}, expected_model_spec={}, expected_model_files=5, check_opts=True):
+def check_freeze_layers_train_on_catdog_datasets_int(trainer_args={}, expected_model_spec={}, expected_model_files=5, check_opts=True):
     with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
         trainer = Trainer(
             train_dataset_dir=os.path.abspath('tests/files/catdog/train'),
@@ -97,10 +97,58 @@ def check_freeze_layers_train_on_catdog_datasets(trainer_args={}, expected_model
         )
         trainer.run()
 
-        actual = trainer.model.layers[5].trainable
-        expected = False
+        for i in range(1, 10):
+            actual = trainer.model.layers[i].trainable
+            expected = False
 
-        assert actual == expected
+            assert actual == expected
+
+
+def check_freeze_layers_train_on_catdog_datasets_np_int(trainer_args={}, expected_model_spec={}, expected_model_files=5,
+                                                        check_opts=True):
+    with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
+        trainer = Trainer(
+            train_dataset_dir=os.path.abspath('tests/files/catdog/train'),
+            val_dataset_dir=os.path.abspath('tests/files/catdog/val'),
+            output_model_dir=output_model_dir,
+            output_logs_dir=output_logs_dir,
+            epochs=1,
+            batch_size=1,
+            model_kwargs={'alpha': 1.0},
+            freeze_layers_list=list(np.arange(1, 10)),
+            **trainer_args
+        )
+        trainer.run()
+
+        for i in range(1, 10):
+            actual = trainer.model.layers[i].trainable
+            expected = False
+
+            assert actual == expected
+
+
+def check_freeze_layers_train_on_catdog_datasets_str(freeze_layers_list_str, trainer_args={}, expected_model_spec={}, expected_model_files=5,
+                                                     check_opts=True):
+
+    with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
+        trainer = Trainer(
+            train_dataset_dir=os.path.abspath('tests/files/catdog/train'),
+            val_dataset_dir=os.path.abspath('tests/files/catdog/val'),
+            output_model_dir=output_model_dir,
+            output_logs_dir=output_logs_dir,
+            epochs=1,
+            batch_size=1,
+            model_kwargs={'alpha': 1.0},
+            freeze_layers_list=freeze_layers_list_str,
+            **trainer_args
+        )
+        trainer.run()
+
+        for layer in freeze_layers_list_str:
+            actual = trainer.model.get_layer(layer).trainable
+            expected = False
+
+            assert actual == expected
 
 
 def check_freeze_layers_train_on_catdog_datasets_with_float(trainer_args={}, expected_model_spec={}, expected_model_files=5, check_opts=True):
@@ -153,7 +201,8 @@ def test_custom_model_on_catdog_datasets():
 
 
 def test_freeze_layers_on_catdog_datasets():
-    check_freeze_layers_train_on_catdog_datasets({
+    freeze_layer_lst = ['conv1', 'conv1_bn']
+    check_freeze_layers_train_on_catdog_datasets_int({
         'model_spec': 'mobilenet_v1'
     }, {
         'klass': 'keras_applications.mobilenet.MobileNet',
@@ -162,7 +211,29 @@ def test_freeze_layers_on_catdog_datasets():
         'preprocess_func': 'between_plus_minus_1',
         'target_size': [224, 224, 3]
     })
-    with pytest.raises(ValueError, message="<class 'numpy.float64'> layer type not supported to freeze layers"):
+
+    check_freeze_layers_train_on_catdog_datasets_np_int({
+        'model_spec': 'mobilenet_v1'
+    }, {
+        'klass': 'keras_applications.mobilenet.MobileNet',
+        'name': 'mobilenet_v1',
+        'preprocess_args': None,
+        'preprocess_func': 'between_plus_minus_1',
+        'target_size': [224, 224, 3]
+    })
+
+    check_freeze_layers_train_on_catdog_datasets_str(freeze_layer_lst,
+                                                     {
+                                                         'model_spec': 'mobilenet_v1'
+                                                     }, {
+                                                         'klass': 'keras_applications.mobilenet.MobileNet',
+                                                         'name': 'mobilenet_v1',
+                                                         'preprocess_args': None,
+                                                         'preprocess_func': 'between_plus_minus_1',
+                                                         'target_size': [224, 224, 3]
+                                                     })
+
+    with pytest.raises(ValueError, message="<class 'numpy.float64'> layer type not supported to freeze layers, we expect an int giving the layer index or a str containing the name of the layer."):
         check_freeze_layers_train_on_catdog_datasets_with_float({
             'model_spec': 'mobilenet_v1'
         }, {

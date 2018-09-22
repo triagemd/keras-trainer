@@ -197,12 +197,12 @@ class Trainer(object):
         # Freeze layers if contained in list
         if self.freeze_layers_list is not None:
             for layer in self.freeze_layers_list:
-                if isinstance(layer, int) or isinstance(layer, np.int64):
+                if isinstance(layer, int) or isinstance(layer, np.int32) or isinstance(layer, np.int64):
                     self.model.layers[layer].trainable = False
                 elif isinstance(layer, str):
                     self.model.get_layer(layer).trainable = False
                 else:
-                    raise ValueError("%s layer type not supported to freeze layers" % (type(layer)))
+                    raise ValueError("%s layer type not supported to freeze layers, we expect an int giving the layer index or a str containing the name of the layer." % (type(layer)))
 
         # Print the model summary.
         if self.verbose:
