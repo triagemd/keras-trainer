@@ -202,7 +202,7 @@ class Trainer(object):
                 elif isinstance(layer, str):
                     self.model.get_layer(layer).trainable = False
                 else:
-                    raise ValueError("We do not support freezing layers of type:", type(layer))
+                    raise ValueError("%s layer type not supported to freeze layers" % (type(layer)))
 
         # Print the model summary.
         if self.verbose:

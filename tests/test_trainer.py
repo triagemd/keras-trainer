@@ -97,8 +97,8 @@ def check_freeze_layers_train_on_catdog_datasets(trainer_args={}, expected_model
         )
         trainer.run()
 
-        expected = False
         actual = trainer.model.layers[5].trainable
+        expected = False
 
         assert actual == expected
 
@@ -162,7 +162,7 @@ def test_freeze_layers_on_catdog_datasets():
         'preprocess_func': 'between_plus_minus_1',
         'target_size': [224, 224, 3]
     })
-    with pytest.raises(ValueError, message="'We do not support freezing layers of type:', <class 'numpy.float64'>'"):
+    with pytest.raises(ValueError, message="<class 'numpy.float64'> layer type not supported to freeze layers"):
         check_freeze_layers_train_on_catdog_datasets_with_float({
             'model_spec': 'mobilenet_v1'
         }, {
