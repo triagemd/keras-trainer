@@ -12,7 +12,6 @@ from keras.models import Model, load_model
 from keras.layers import Dense, Activation, Dropout
 from keras.preprocessing import image
 from keras.callbacks import TensorBoard, ModelCheckpoint
-from keras_applications.mobilenet import MobileNet
 from keras_model_specs import ModelSpec
 from keras_trainer.parallel import make_parallel
 
@@ -136,35 +135,14 @@ class Trainer(object):
         elif self.custom_model is not None and self.model_spec.klass is None:
             self.model = self.custom_model
         # Load a model supported by keras-model-specs
-        else:
-            # MobileNet work-around
-            if self.model_spec.klass == MobileNet:
-                # Initialize the base with valid target_size
-                model_kwargs = {
-                    'input_shape': (224, 224, 3),
-                    'weights': self.weights,
-                    'include_top': self.include_top,
-                    'pooling': self.pooling
-                }
-                model_kwargs.update(self.model_kwargs)
-                self.model = self.model_spec.klass(**model_kwargs)
 
-                # Expand the base model to match the spec target_size
-                model_kwargs.update({
-                    'input_shape': self.input_shape or self.model_spec.target_size,
-                    'weights': None
-                })
-                expanded_model = self.model_spec.klass(**model_kwargs)
-                for i in range(1, len(expanded_model.layers)):
-                    expanded_model.layers[i].set_weights(self.model.layers[i].get_weights())
-                self.model = expanded_model
-            else:
-                self.model = self.model_spec.klass(
-                    input_shape=self.input_shape or self.model_spec.target_size,
-                    weights=self.weights,
-                    include_top=self.include_top,
-                    pooling=self.pooling
-                )
+        else:
+            self.model = self.model_spec.klass(
+                input_shape=self.input_shape or self.model_spec.target_size,
+                weights=self.weights,
+                include_top=self.include_top,
+                pooling=self.pooling
+            )
 
             # If top layers are given include them, else include a Dense Layer with Softmax/Sigmoid
             if self.top_layers is None:
