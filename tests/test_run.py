@@ -1,7 +1,7 @@
-import pytest
 import os
 import json
 import base64
+import pytest
 import shutil
 import subprocess
 
@@ -16,7 +16,7 @@ def output_dir():
     return path
 
 
-def test_run_with_model_spec_name_only(output_dir):
+def test_run_with_model_spec_name_only(output_dir, train_catdog_dataset_path, val_catdog_dataset_path):
     model_output_dir = os.path.join(output_dir, 'model')
     logs_output_dir = os.path.join(output_dir, 'logs')
     subprocess.check_output([
@@ -26,9 +26,9 @@ def test_run_with_model_spec_name_only(output_dir):
         '--model_spec',
         'mobilenet_v1',
         '--train_dataset_dir',
-        os.path.abspath('tests/files/catdog/train'),
+        train_catdog_dataset_path,
         '--val_dataset_dir',
-        os.path.abspath('tests/files/catdog/val'),
+        val_catdog_dataset_path,
         '--output_model_dir',
         model_output_dir,
         '--output_logs_dir',
@@ -44,7 +44,7 @@ def test_run_with_model_spec_name_only(output_dir):
         assert path.startswith('events.out.tfevents.'), path
 
 
-def test_run_with_model_spec_encoded_base64(output_dir):
+def test_run_with_model_spec_encoded_base64(output_dir, train_catdog_dataset_path, val_catdog_dataset_path):
     model_output_dir = os.path.join(output_dir, 'model')
     logs_output_dir = os.path.join(output_dir, 'logs')
     subprocess.check_output([
@@ -54,9 +54,9 @@ def test_run_with_model_spec_encoded_base64(output_dir):
         '--model_spec',
         base64.b64encode(json.dumps({'name': 'mobilenet_v1'}).encode()),
         '--train_dataset_dir',
-        'tests/files/catdog/train',
+        train_catdog_dataset_path,
         '--val_dataset_dir',
-        'tests/files/catdog/val',
+        val_catdog_dataset_path,
         '--output_model_dir',
         model_output_dir,
         '--output_logs_dir',
