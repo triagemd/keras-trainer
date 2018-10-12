@@ -1,5 +1,6 @@
 import os
 import numpy as np
+
 from keras_preprocessing.image import ImageDataGenerator, DirectoryIterator, get_keras_submodule, array_to_img, \
     load_img, img_to_array
 
@@ -12,7 +13,7 @@ backend = get_keras_submodule('backend')
 
 class BalancedDirectoryIterator(DirectoryIterator):
     '''
-    Each sample is selected randomly and with uniform probability, so all the classes are distributed equiprobably.
+    Each sample is selected randomly and with uniform probability, so all the classes are evenly distributed.
     We can have repetition of samples during the same epoch.
     '''
 
@@ -52,7 +53,7 @@ class BalancedDirectoryIterator(DirectoryIterator):
 
 class BalancedImageDataGenerator(ImageDataGenerator):
     '''
-    ImageDataGenerator that returns a balanced number of samples using a BalancedDirectoryIterator as iterator
+    ImageDataGenerator that returns a balanced number of samples using a BalancedDirectoryIterator as iterator.
     '''
 
     def __init__(self,
@@ -209,7 +210,7 @@ class DirectoryIteratorSameMultiGT(DirectoryIterator):
 
 class ImageDataGeneratorSameMultiGT(ImageDataGenerator):
     '''
-    ImageDataGenerator that returns multiple outputs using DirectoryIteratorSameMultiGT as iterator
+    ImageDataGenerator that returns multiple outputs using DirectoryIteratorSameMultiGT as iterator.
     '''
 
     def __init__(self,
