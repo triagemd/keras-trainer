@@ -21,7 +21,7 @@ class BalancedDirectoryIterator(DirectoryIterator):
                  target_size=(256, 256), color_mode='rgb',
                  classes=None, class_mode='categorical',
                  batch_size=32, shuffle=True, seed=None,
-                 data_format=None,
+                 data_format='channels_last',
                  save_to_dir=None, save_prefix='', save_format='png',
                  follow_links=False,
                  subset=None,
@@ -76,7 +76,7 @@ class BalancedImageDataGenerator(ImageDataGenerator):
                  vertical_flip=False,
                  rescale=None,
                  preprocessing_function=None,
-                 data_format=None,
+                 data_format='channels_last',
                  validation_split=0.0,
                  ):
 
@@ -135,7 +135,7 @@ class DirectoryIteratorSameMultiGT(DirectoryIterator):
                  target_size=(256, 256), color_mode='rgb',
                  classes=None, class_mode='categorical',
                  batch_size=32, shuffle=True, seed=None,
-                 data_format=None,
+                 data_format='channels_last',
                  save_to_dir=None, save_prefix='', save_format='png',
                  follow_links=False,
                  subset=None,
@@ -233,7 +233,7 @@ class ImageDataGeneratorSameMultiGT(ImageDataGenerator):
                  vertical_flip=False,
                  rescale=None,
                  preprocessing_function=None,
-                 data_format=None,
+                 data_format='channels_last',
                  validation_split=0.0,
                  n_outputs=2):
 
