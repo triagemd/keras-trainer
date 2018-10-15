@@ -1,5 +1,6 @@
 import os
 import numpy as np
+
 from keras_preprocessing.image import ImageDataGenerator, DirectoryIterator, get_keras_submodule, array_to_img, \
     load_img, img_to_array
 
@@ -12,7 +13,7 @@ backend = get_keras_submodule('backend')
 
 class BalancedDirectoryIterator(DirectoryIterator):
     '''
-    Each sample is selected randomly and with uniform probability, so all the classes are distributed equiprobably.
+    Each sample is selected randomly and with uniform probability, so all the classes are evenly distributed.
     We can have repetition of samples during the same epoch.
     '''
 
@@ -20,7 +21,7 @@ class BalancedDirectoryIterator(DirectoryIterator):
                  target_size=(256, 256), color_mode='rgb',
                  classes=None, class_mode='categorical',
                  batch_size=32, shuffle=True, seed=None,
-                 data_format=None,
+                 data_format='channels_last',
                  save_to_dir=None, save_prefix='', save_format='png',
                  follow_links=False,
                  subset=None,
@@ -52,7 +53,7 @@ class BalancedDirectoryIterator(DirectoryIterator):
 
 class BalancedImageDataGenerator(ImageDataGenerator):
     '''
-    ImageDataGenerator that returns a balanced number of samples using a BalancedDirectoryIterator as iterator
+    ImageDataGenerator that returns a balanced number of samples using a BalancedDirectoryIterator as iterator.
     '''
 
     def __init__(self,
@@ -75,7 +76,7 @@ class BalancedImageDataGenerator(ImageDataGenerator):
                  vertical_flip=False,
                  rescale=None,
                  preprocessing_function=None,
-                 data_format=None,
+                 data_format='channels_last',
                  validation_split=0.0,
                  ):
 
@@ -134,7 +135,7 @@ class DirectoryIteratorSameMultiGT(DirectoryIterator):
                  target_size=(256, 256), color_mode='rgb',
                  classes=None, class_mode='categorical',
                  batch_size=32, shuffle=True, seed=None,
-                 data_format=None,
+                 data_format='channels_last',
                  save_to_dir=None, save_prefix='', save_format='png',
                  follow_links=False,
                  subset=None,
@@ -209,7 +210,7 @@ class DirectoryIteratorSameMultiGT(DirectoryIterator):
 
 class ImageDataGeneratorSameMultiGT(ImageDataGenerator):
     '''
-    ImageDataGenerator that returns multiple outputs using DirectoryIteratorSameMultiGT as iterator
+    ImageDataGenerator that returns multiple outputs using DirectoryIteratorSameMultiGT as iterator.
     '''
 
     def __init__(self,
@@ -232,7 +233,7 @@ class ImageDataGeneratorSameMultiGT(ImageDataGenerator):
                  vertical_flip=False,
                  rescale=None,
                  preprocessing_function=None,
-                 data_format=None,
+                 data_format='channels_last',
                  validation_split=0.0,
                  n_outputs=2):
 
