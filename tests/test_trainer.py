@@ -6,21 +6,21 @@ import platform
 import tensorflow
 import numpy as np
 
-from backports.tempfile import TemporaryDirectory
 from stored import list_files
-from keras_model_specs import ModelSpec
 from keras_trainer import Trainer
+from keras_model_specs import ModelSpec
 from keras.applications import mobilenet
-from keras_trainer.dataloaders import BalancedImageDataGenerator, ImageDataGeneratorSameMultiGT
+from backports.tempfile import TemporaryDirectory
 from keras_trainer.losses import entropy_penalty_loss
+from keras_trainer.dataloaders import BalancedImageDataGenerator, ImageDataGeneratorSameMultiGT
 
 
-def check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
-                                   trainer_args={}, expected_model_spec={}, expected_model_files=5, check_opts=True):
+def check_train_on_catdog_datasets(train_path, val_path, trainer_args={}, expected_model_spec={},
+                                   expected_model_files=5, check_opts=True):
     with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
         trainer = Trainer(
-            train_dataset_dir=train_catdog_dataset_path,
-            val_dataset_dir=val_catdog_dataset_path,
+            train_dataset_dir=train_path,
+            val_dataset_dir=val_path,
             output_model_dir=output_model_dir,
             output_logs_dir=output_logs_dir,
             epochs=1,
@@ -83,13 +83,12 @@ def check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset
             assert actual == expected
 
 
-def check_freeze_layers_train_on_catdog_datasets_int(train_catdog_dataset_path, val_catdog_dataset_path,
-                                                     trainer_args={}, expected_model_spec={}, expected_model_files=5,
-                                                     check_opts=True):
+def check_freeze_layers_train_on_catdog_datasets_int(train_path, val_path, trainer_args={}, expected_model_spec={},
+                                                     expected_model_files=5, check_opts=True):
     with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
         trainer = Trainer(
-            train_dataset_dir=train_catdog_dataset_path,
-            val_dataset_dir=val_catdog_dataset_path,
+            train_dataset_dir=train_path,
+            val_dataset_dir=val_path,
             output_model_dir=output_model_dir,
             output_logs_dir=output_logs_dir,
             epochs=1,
@@ -107,13 +106,12 @@ def check_freeze_layers_train_on_catdog_datasets_int(train_catdog_dataset_path, 
             assert actual == expected
 
 
-def check_freeze_layers_train_on_catdog_datasets_np_int(train_catdog_dataset_path, val_catdog_dataset_path,
-                                                        trainer_args={}, expected_model_spec={}, expected_model_files=5,
-                                                        check_opts=True):
+def check_freeze_layers_train_on_catdog_datasets_np_int(train_path, val_path, trainer_args={}, expected_model_spec={},
+                                                        expected_model_files=5, check_opts=True):
     with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
         trainer = Trainer(
-            train_dataset_dir=train_catdog_dataset_path,
-            val_dataset_dir=val_catdog_dataset_path,
+            train_dataset_dir=train_path,
+            val_dataset_dir=val_path,
             output_model_dir=output_model_dir,
             output_logs_dir=output_logs_dir,
             epochs=1,
@@ -131,14 +129,12 @@ def check_freeze_layers_train_on_catdog_datasets_np_int(train_catdog_dataset_pat
             assert actual == expected
 
 
-def check_freeze_layers_train_on_catdog_datasets_str(train_catdog_dataset_path, val_catdog_dataset_path,
-                                                     freeze_layers_list_str, trainer_args={}, expected_model_spec={},
-                                                     expected_model_files=5, check_opts=True):
-
+def check_freeze_layers_train_on_catdog_datasets_str(train_path, val_path, freeze_layers_list_str, trainer_args={},
+                                                     expected_model_spec={}, expected_model_files=5, check_opts=True):
     with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
         trainer = Trainer(
-            train_dataset_dir=train_catdog_dataset_path,
-            val_dataset_dir=val_catdog_dataset_path,
+            train_dataset_dir=train_path,
+            val_dataset_dir=val_path,
             output_model_dir=output_model_dir,
             output_logs_dir=output_logs_dir,
             epochs=1,
@@ -156,13 +152,13 @@ def check_freeze_layers_train_on_catdog_datasets_str(train_catdog_dataset_path, 
             assert actual == expected
 
 
-def check_freeze_layers_train_on_catdog_datasets_with_float(train_catdog_dataset_path, val_catdog_dataset_path,
-                                                            trainer_args={}, expected_model_spec={},
-                                                            expected_model_files=5, check_opts=True):
+def check_freeze_layers_train_on_catdog_datasets_with_float(train_path, val_path, trainer_args={},
+                                                            expected_model_spec={}, expected_model_files=5,
+                                                            check_opts=True):
     with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
         trainer = Trainer(
-            train_dataset_dir=train_catdog_dataset_path,
-            val_dataset_dir=val_catdog_dataset_path,
+            train_dataset_dir=train_path,
+            val_dataset_dir=val_path,
             output_model_dir=output_model_dir,
             output_logs_dir=output_logs_dir,
             epochs=1,
@@ -174,7 +170,7 @@ def check_freeze_layers_train_on_catdog_datasets_with_float(train_catdog_dataset
         trainer.run()
 
 
-def test_custom_model_on_catdog_datasets():
+def test_custom_model_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path):
     model = mobilenet.MobileNet(alpha=0.25, include_top=False, pooling='avg', input_shape=[224, 224, 3])
     top_layers = []
     # Set Dense Layer
@@ -191,68 +187,47 @@ def test_custom_model_on_catdog_datasets():
 
     # Final Model (last item of self.top_layer contains all of them assembled)
     model = keras.models.Model(model.input, top_layers[-1])
-    check_train_on_catdog_datasets({'custom_model': model,
-                                    'model_spec': ModelSpec.get('mobilenet_custom', preprocess_args=[1, 2, 3],
-                                                                preprocess_func='mean_subtraction',
-                                                                target_size=[224, 224, 3])
-                                    },
-                                   {
-                                       'klass': None,
-                                       'name': 'mobilenet_custom',
-                                       'preprocess_args': [1, 2, 3],
-                                       'preprocess_func': 'mean_subtraction',
-                                       'target_size': [224, 224, 3]
-    },
-        check_opts=False
-    )
+    trainer_args = {'custom_model': model,
+                    'model_spec': ModelSpec.get('mobilenet_custom', preprocess_args=[1, 2, 3],
+                                                preprocess_func='mean_subtraction',
+                                                target_size=[224, 224, 3])
+                    }
+    expected_model_spec = {'klass': None,
+                           'name': 'mobilenet_custom',
+                           'preprocess_args': [1, 2, 3],
+                           'preprocess_func': 'mean_subtraction',
+                           'target_size': [224, 224, 3]
+                           }
+
+    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path, trainer_args,
+                                   expected_model_spec, check_opts=False)
 
 
-def test_freeze_layers_on_catdog_datasets():
+def test_freeze_layers_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path):
     freeze_layer_lst = ['conv1', 'conv1_bn']
-    check_freeze_layers_train_on_catdog_datasets_int({
-        'model_spec': 'mobilenet_v1'
-    }, {
-        'klass': 'keras.applications.mobilenet.MobileNet',
-        'name': 'mobilenet_v1',
-        'preprocess_args': None,
-        'preprocess_func': 'between_plus_minus_1',
-        'target_size': [224, 224, 3]
-    })
+    trainer_args = {'model_spec': 'mobilenet_v1'}
+    expected_model_spec = {'klass': 'keras.applications.mobilenet.MobileNet',
+                           'name': 'mobilenet_v1',
+                           'preprocess_args': None,
+                           'preprocess_func': 'between_plus_minus_1',
+                           'target_size': [224, 224, 3]
+                           }
 
-    check_freeze_layers_train_on_catdog_datasets_np_int({
-        'model_spec': 'mobilenet_v1'
-    }, {
-        'klass': 'keras.applications.mobilenet.MobileNet',
-        'name': 'mobilenet_v1',
-        'preprocess_args': None,
-        'preprocess_func': 'between_plus_minus_1',
-        'target_size': [224, 224, 3]
-    })
+    check_freeze_layers_train_on_catdog_datasets_int(train_catdog_dataset_path, val_catdog_dataset_path,
+                                                     trainer_args, expected_model_spec)
 
-    check_freeze_layers_train_on_catdog_datasets_str(freeze_layer_lst,
-                                                     {
-                                                         'model_spec': 'mobilenet_v1'
-                                                     }, {
-                                                         'klass': 'keras.applications.mobilenet.MobileNet',
-                                                         'name': 'mobilenet_v1',
-                                                         'preprocess_args': None,
-                                                         'preprocess_func': 'between_plus_minus_1',
-                                                         'target_size': [224, 224, 3]
-                                                     })
+    check_freeze_layers_train_on_catdog_datasets_np_int(train_catdog_dataset_path, val_catdog_dataset_path,
+                                                        trainer_args, expected_model_spec)
+
+    check_freeze_layers_train_on_catdog_datasets_str(train_catdog_dataset_path, val_catdog_dataset_path,
+                                                     freeze_layer_lst, trainer_args, expected_model_spec)
 
     with pytest.raises(ValueError, message="<class 'numpy.float64'> layer type not supported to freeze layers, we expect an int giving the layer index or a str containing the name of the layer."):
-        check_freeze_layers_train_on_catdog_datasets_with_float({
-            'model_spec': 'mobilenet_v1'
-        }, {
-            'klass': 'keras.applications.mobilenet.MobileNet',
-            'name': 'mobilenet_v1',
-            'preprocess_args': None,
-            'preprocess_func': 'between_plus_minus_1',
-            'target_size': [224, 224, 3]
-        })
+        check_freeze_layers_train_on_catdog_datasets_with_float(train_catdog_dataset_path, val_catdog_dataset_path,
+                                                                trainer_args, expected_model_spec)
 
 
-def test_custom_model_on_catdog_datasets_with_multi_loss():
+def test_custom_model_on_catdog_datasets_with_multi_loss(train_catdog_dataset_path, val_catdog_dataset_path):
     model = mobilenet.MobileNet(alpha=0.25, include_top=False, pooling='avg', input_shape=[224, 224, 3])
     top_layers = []
     # Set Dense Layer
@@ -270,104 +245,106 @@ def test_custom_model_on_catdog_datasets_with_multi_loss():
     # Final Model (last item of self.top_layer contains all of them assembled)
     model = keras.models.Model(model.input, [top_layers[-1], top_layers[-1]])
 
-    check_train_on_catdog_datasets({'custom_model': model,
-                                    'train_data_generator': ImageDataGeneratorSameMultiGT(n_outputs=2),
-                                    'val_data_generator': ImageDataGeneratorSameMultiGT(n_outputs=2),
-                                    'loss_function': ['categorical_crossentropy', entropy_penalty_loss],
-                                    'loss_weights': [1.0, 0.25],
-                                    'model_spec': ModelSpec.get('mobilenet_custom_2_outputs', preprocess_args=[1, 2, 3],
-                                                                preprocess_func='mean_subtraction',
-                                                                target_size=[224, 224, 3])
-                                    },
-                                   {
-                                       'klass': None,
-                                       'name': 'mobilenet_custom_2_outputs',
-                                       'preprocess_args': [1, 2, 3],
-                                       'preprocess_func': 'mean_subtraction',
-                                       'target_size': [224, 224, 3]
-    },
-        check_opts=False
-    )
+    trainer_args = {'custom_model': model,
+                    'train_data_generator': ImageDataGeneratorSameMultiGT(n_outputs=2),
+                    'val_data_generator': ImageDataGeneratorSameMultiGT(n_outputs=2),
+                    'loss_function': ['categorical_crossentropy', entropy_penalty_loss],
+                    'loss_weights': [1.0, 0.25],
+                    'model_spec': ModelSpec.get('mobilenet_custom_2_outputs', preprocess_args=[1, 2, 3],
+                                                preprocess_func='mean_subtraction',
+                                                target_size=[224, 224, 3])
+                    }
+    expected_model_spec = {'klass': None,
+                           'name': 'mobilenet_custom_2_outputs',
+                           'preprocess_args': [1, 2, 3],
+                           'preprocess_func': 'mean_subtraction',
+                           'target_size': [224, 224, 3]
+                           }
+    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
+                                   trainer_args, expected_model_spec, check_opts=False)
 
 
-def test_mobilenet_v1_on_catdog_datasets_with_balanced_generator():
-    check_train_on_catdog_datasets({
+def test_mobilenet_v1_on_catdog_datasets_with_balanced_generator(train_catdog_dataset_path, val_catdog_dataset_path):
+    trainer_args = {
         'train_data_generator': BalancedImageDataGenerator(),
         'model_spec': 'mobilenet_v1'
-    }, {
-        'klass': 'keras.applications.mobilenet.MobileNet',
-        'name': 'mobilenet_v1',
-        'preprocess_args': None,
-        'preprocess_func': 'between_plus_minus_1',
-        'target_size': [224, 224, 3]
-    },
-        check_opts=False
-    )
+    }
+    expected_model_spec = {'klass': 'keras.applications.mobilenet.MobileNet',
+                           'name': 'mobilenet_v1',
+                           'preprocess_args': None,
+                           'preprocess_func': 'between_plus_minus_1',
+                           'target_size': [224, 224, 3]
+                           }
+
+    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path, trainer_args,
+                                   expected_model_spec, check_opts=False)
 
 
-def test_mobilenet_v1_on_catdog_datasets_with_missing_required_options():
+def test_mobilenet_v1_on_catdog_datasets_with_missing_required_options(train_catdog_dataset_path, val_catdog_dataset_path):
     with pytest.raises(ValueError, message='missing required option: model_spec'):
-        check_train_on_catdog_datasets()
+        check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path)
 
 
-def test_mobilenet_v1_on_catdog_datasets_with_extra_unsupported_options():
+def test_mobilenet_v1_on_catdog_datasets_with_extra_unsupported_options(train_catdog_dataset_path, val_catdog_dataset_path):
     with pytest.raises(ValueError, message='unsupported options given: some_other_arg'):
-        check_train_on_catdog_datasets({
-            'model_spec': 'mobilenet_v1',
-            'some_other_arg': 'foo'
-        })
+        trainer_args = {'model_spec': 'mobilenet_v1',
+                        'some_other_arg': 'foo'
+                        }
+        check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path, trainer_args=trainer_args)
 
 
-def test_mobilenet_v1_on_catdog_datasets_with_dropout():
-    check_train_on_catdog_datasets({
-        'dropout_rate': 0.5,
-        'model_spec': 'mobilenet_v1'
-    }, {
+def test_mobilenet_v1_on_catdog_datasets_with_dropout(train_catdog_dataset_path, val_catdog_dataset_path):
+    trainer_args = {'dropout_rate': 0.5,
+                    'model_spec': 'mobilenet_v1'
+                    }
+    expected_model_spec = {'klass': 'keras.applications.mobilenet.MobileNet',
+                           'name': 'mobilenet_v1',
+                           'preprocess_args': None,
+                           'preprocess_func': 'between_plus_minus_1',
+                           'target_size': [224, 224, 3]
+                           }
+    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
+                                   trainer_args, expected_model_spec)
+
+
+def test_mobilenet_v1_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path):
+    trainer_args = {'model_spec': 'mobilenet_v1'}
+    expected_model_spec = {
         'klass': 'keras.applications.mobilenet.MobileNet',
         'name': 'mobilenet_v1',
         'preprocess_args': None,
         'preprocess_func': 'between_plus_minus_1',
         'target_size': [224, 224, 3]
-    })
+    }
+    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
+                                   trainer_args, expected_model_spec)
 
 
-def test_mobilenet_v1_on_catdog_datasets():
-    check_train_on_catdog_datasets({
-        'model_spec': 'mobilenet_v1'
-    }, {
-        'klass': 'keras.applications.mobilenet.MobileNet',
-        'name': 'mobilenet_v1',
-        'preprocess_args': None,
-        'preprocess_func': 'between_plus_minus_1',
-        'target_size': [224, 224, 3]
-    })
+def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override(train_catdog_dataset_path, val_catdog_dataset_path):
+    trainer_args = {'model_spec': ModelSpec.get(
+        'mobilenet_v1',
+        klass='keras.applications.mobilenet.MobileNet',
+        target_size=[224, 224, 3],
+        preprocess_func='mean_subtraction',
+        preprocess_args=[1, 2, 3]
+    )}
+    expected_model_spec = {'klass': 'keras.applications.mobilenet.MobileNet',
+                           'name': 'mobilenet_v1',
+                           'preprocess_args': [1, 2, 3],
+                           'preprocess_func': 'mean_subtraction',
+                           'target_size': [224, 224, 3]
+                           }
+    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
+                                   trainer_args, expected_model_spec)
 
 
-def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override():
-    check_train_on_catdog_datasets({
-        'model_spec': ModelSpec.get(
-            'mobilenet_v1',
-            klass='keras.applications.mobilenet.MobileNet',
-            target_size=[512, 512, 3],
-            preprocess_func='mean_subtraction',
-            preprocess_args=[1, 2, 3]
-        )
-    }, {
-        'klass': 'keras.applications.mobilenet.MobileNet',
-        'name': 'mobilenet_v1',
-        'preprocess_args': [1, 2, 3],
-        'preprocess_func': 'mean_subtraction',
-        'target_size': [512, 512, 3]
-    })
-
-
-def test_resnet50_on_catdog_datasets():
-    check_train_on_catdog_datasets({
-        'model_spec': ModelSpec.get('resnet50', preprocess_args=[1, 2, 3])
-    }, {
-        'klass': 'keras.applications.resnet50.ResNet50',
-        'name': 'resnet50',
-        'preprocess_args': [1, 2, 3],
-        'preprocess_func': 'mean_subtraction',
-        'target_size': [224, 224, 3]
-    })
+def test_resnet50_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path):
+    trainer_args = {'model_spec': ModelSpec.get('resnet50', target_size=[512, 512, 3], preprocess_args=[1, 2, 3])}
+    expected_model_spec = {'klass': 'keras.applications.resnet50.ResNet50',
+                           'name': 'resnet50',
+                           'preprocess_args': [1, 2, 3],
+                           'preprocess_func': 'mean_subtraction',
+                           'target_size': [512, 512, 3]
+                           }
+    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
+                                   trainer_args, expected_model_spec)
