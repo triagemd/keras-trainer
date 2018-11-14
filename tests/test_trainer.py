@@ -12,7 +12,7 @@ from keras_model_specs import ModelSpec
 from keras.applications import mobilenet
 from backports.tempfile import TemporaryDirectory
 from keras_trainer.losses import entropy_penalty_loss
-from keras_trainer.dataloaders import BalancedImageDataGenerator, ImageDataGeneratorSameMultiGT
+from keras_trainer.data_generators import BalancedImageDataGenerator, ImageDataGeneratorSameMultiGT
 
 
 def check_train_on_catdog_datasets(train_path, val_path, trainer_args={}, expected_model_spec={},

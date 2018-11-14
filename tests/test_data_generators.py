@@ -1,7 +1,7 @@
 import numpy as np
 
 from keras_preprocessing.image import ImageDataGenerator
-from keras_trainer.dataloaders import BalancedDirectoryIterator, DirectoryIteratorSameMultiGT
+from keras_trainer.data_generators import BalancedDirectoryIterator, DirectoryIteratorSameMultiGT
 
 # Core functions are already tested in https://github.com/keras-team/keras-preprocessing/blob/master/tests/image_test.py
 # Here we provide tests for the functionalities added

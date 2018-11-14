@@ -13,8 +13,12 @@ backend = get_keras_submodule('backend')
 
 class BalancedDirectoryIterator(DirectoryIterator):
     '''
-    Each sample is selected randomly and with uniform probability, so all the classes are evenly distributed.
+
+    This iterator inherits from DirectoryIterator
+    (https://github.com/keras-team/keras-preprocessing/blob/master/keras_preprocessing/image.py#L1811)
+    Each sample is selected randomly with uniform probability, so all the classes are evenly distributed.
     We can have repetition of samples during the same epoch.
+
     '''
 
     def __init__(self, directory, image_data_generator,
@@ -53,7 +57,9 @@ class BalancedDirectoryIterator(DirectoryIterator):
 
 class BalancedImageDataGenerator(ImageDataGenerator):
     '''
+
     ImageDataGenerator that returns a balanced number of samples using a BalancedDirectoryIterator as iterator.
+
     '''
 
     def __init__(self,
@@ -128,7 +134,13 @@ class BalancedImageDataGenerator(ImageDataGenerator):
 
 class DirectoryIteratorSameMultiGT(DirectoryIterator):
     '''
-    This iterator returns batch_x and a list containing n_outputs times batch_y, which are the ground truth labels.
+
+    This iterator inherits from DirectoryIterator
+    (https://github.com/keras-team/keras-preprocessing/blob/master/keras_preprocessing/image.py#L1811)
+    It has the addition of `n_outputs` as an argument.
+
+    Returns `batch_x` and a list containing `n_outputs` times `batch_y`, which are the ground truth labels.
+
     '''
 
     def __init__(self, directory, image_data_generator,
@@ -210,7 +222,9 @@ class DirectoryIteratorSameMultiGT(DirectoryIterator):
 
 class ImageDataGeneratorSameMultiGT(ImageDataGenerator):
     '''
+
     ImageDataGenerator that returns multiple outputs using DirectoryIteratorSameMultiGT as iterator.
+
     '''
 
     def __init__(self,
