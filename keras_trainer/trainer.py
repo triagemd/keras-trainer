@@ -269,7 +269,7 @@ class Trainer(object):
             file.write(json.dumps(self.model_spec.as_json(), indent=True, sort_keys=True))
 
         # Save training options
-        if save_training_options:
+        if self.save_training_options:
             with open(os.path.join(self.output_model_dir, 'training_options.json'), 'w') as file:
                 safe_options = {}
                 for key, value in self.context['options'].items():
