@@ -53,9 +53,10 @@ class Trainer(object):
         'workers': {'type': int, 'default': 1},
         'max_queue_size': {'type': int, 'default': 16},
         'num_classes': {'type': int, 'default': None},
-        'verbose': {'type': str, 'default': False},
-        'model_kwargs': {'type': dict, 'default': {}}
-    }
+        'verbose': {'type': bool, 'default': False},
+        'model_kwargs': {'type': dict, 'default': {}},
+        'save_training_options': {'type': bool, 'default': True}
+        }
 
     def __init__(self, **options):
         for key, option in self.OPTIONS.items():
@@ -268,15 +269,16 @@ class Trainer(object):
             file.write(json.dumps(self.model_spec.as_json(), indent=True, sort_keys=True))
 
         # Save training options
-        with open(os.path.join(self.output_model_dir, 'training_options.json'), 'w') as file:
-            safe_options = {}
-            for key, value in self.context['options'].items():
-                if value is None:
-                    continue
-                try:
-                    json.dumps(value)
-                    safe_options[key] = value
-                except TypeError:
-                    continue
-            self.context['options'] = safe_options
-            file.write(json.dumps(self.context, indent=True, sort_keys=True))
+        if self.save_training_options:
+            with open(os.path.join(self.output_model_dir, 'training_options.json'), 'w') as file:
+                safe_options = {}
+                for key, value in self.context['options'].items():
+                    if value is None:
+                        continue
+                    try:
+                        json.dumps(value)
+                        safe_options[key] = value
+                    except TypeError:
+                        continue
+                self.context['options'] = safe_options
+                file.write(json.dumps(self.context, indent=True, sort_keys=True))
