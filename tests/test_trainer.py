@@ -64,6 +64,7 @@ def check_train_on_catdog_datasets(train_path, val_path, trainer_args={}, expect
                 'output_logs_dir': 'redacted',
                 'output_model_dir': 'redacted',
                 'pooling': 'avg',
+                'save_training_options': True,
                 'include_top': False,
                 'sgd_lr': 0.01,
                 'dropout_rate': 0.0,
