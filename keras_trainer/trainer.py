@@ -20,10 +20,10 @@ class Trainer(object):
 
     OPTIONS = {
         'model_spec': {'type': str},
-        'train_dataset_dir': {'type': str},
-        'val_dataset_dir': {'type': str},
         'output_model_dir': {'type': str},
         'output_logs_dir': {'type': str},
+        'train_dataset_dir': {'type': str, 'default': None},
+        'val_dataset_dir': {'type': str, 'default': None},
         'custom_model': {'type': None, 'default': None},
         'include_top': {'type': bool, 'default': False},
         'input_shape': {'type': None, 'default': None},
