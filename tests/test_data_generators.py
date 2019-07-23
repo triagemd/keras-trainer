@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 from keras_preprocessing.image import ImageDataGenerator
 from keras_trainer.data_generators import BalancedDirectoryIterator, DirectoryIteratorSameMultiGT, \
-    RandomCropImageDataGenerator, RandomCropDirectoryIterator
+    RandomCropImageDataGenerator
 
 # Core functions are already tested in https://github.com/keras-team/keras-preprocessing/blob/master/tests/image_test.py
 # Here we provide tests for the functionalities added
@@ -52,3 +52,8 @@ def test_random_crop_image_data_generator(train_catdog_dataset_path):
 
     assert dx - x == 665
     assert dy - y == 665
+
+    x, y, dx, dy = datagen.random_crop_parameters(img, crop_size=(55, 200), crop_mode='size')
+
+    assert dx - x == 55
+    assert dy - y == 200
