@@ -56,7 +56,7 @@ class Trainer(object):
         'verbose': {'type': bool, 'default': False},
         'model_kwargs': {'type': dict, 'default': {}},
         'save_training_options': {'type': bool, 'default': True}
-        }
+    }
 
     def __init__(self, **options):
         for key, option in self.OPTIONS.items():
