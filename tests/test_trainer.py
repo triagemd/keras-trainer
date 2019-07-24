@@ -223,7 +223,9 @@ def test_freeze_layers_on_catdog_datasets(train_catdog_dataset_path, val_catdog_
     check_freeze_layers_train_on_catdog_datasets_str(train_catdog_dataset_path, val_catdog_dataset_path,
                                                      freeze_layer_lst, trainer_args, expected_model_spec)
 
-    with pytest.raises(ValueError, message="<class 'numpy.float64'> layer type not supported to freeze layers, we expect an int giving the layer index or a str containing the name of the layer."):
+    with pytest.raises(ValueError, match="<class 'numpy.float64'> layer type not supported to freeze layers, "
+                       "we expect an int giving the layer index or a str containing "
+                       "the name of the layer."):
         check_freeze_layers_train_on_catdog_datasets_with_float(train_catdog_dataset_path, val_catdog_dataset_path,
                                                                 trainer_args, expected_model_spec)
 
@@ -282,12 +284,12 @@ def test_mobilenet_v1_on_catdog_datasets_with_balanced_generator(train_catdog_da
 
 
 def test_mobilenet_v1_on_catdog_datasets_with_missing_required_options(train_catdog_dataset_path, val_catdog_dataset_path):
-    with pytest.raises(ValueError, message='missing required option: model_spec'):
+    with pytest.raises(ValueError, match='missing required option: model_spec'):
         check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path)
 
 
 def test_mobilenet_v1_on_catdog_datasets_with_extra_unsupported_options(train_catdog_dataset_path, val_catdog_dataset_path):
-    with pytest.raises(ValueError, message='unsupported options given: some_other_arg'):
+    with pytest.raises(ValueError, match='unsupported options given: some_other_arg'):
         trainer_args = {'model_spec': 'mobilenet_v1',
                         'some_other_arg': 'foo'
                         }
@@ -344,7 +346,7 @@ def test_resnet50_on_catdog_datasets(train_catdog_dataset_path, val_catdog_datas
     expected_model_spec = {'klass': 'keras.applications.resnet50.ResNet50',
                            'name': 'resnet50',
                            'preprocess_args': [1, 2, 3],
-                           'preprocess_func': 'mean_subtraction',
+                           'preprocess_func': 'bgr_mean_subtraction',
                            'target_size': [512, 512, 3]
                            }
     check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
