@@ -1,7 +1,6 @@
 language: python
 
 python:
-  - 2.7
   - 3.6
 
 before_install:
@@ -11,6 +10,6 @@ script:
   - script/test
 
 after_success:
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" && "$TRAVIS_BRANCH" == "master" && "$TRAVIS_PULL_REQUEST" == "false" ]]; then
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "3.6" && "$TRAVIS_BRANCH" == "master" && "$TRAVIS_PULL_REQUEST" == "false" ]]; then
       script/distribute;
     fi
