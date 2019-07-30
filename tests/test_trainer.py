@@ -204,12 +204,6 @@ def test_custom_model_on_catdog_datasets(train_catdog_dataset_path, val_catdog_d
 def test_freeze_layers_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path):
     freeze_layer_lst = ['conv1', 'conv1_bn']
     trainer_args = {'model_spec': 'mobilenet_v1'}
-    expected_model_spec = {'klass': 'keras.applications.mobilenet.MobileNet',
-                           'name': 'mobilenet_v1',
-                           'preprocess_args': None,
-                           'preprocess_func': 'between_plus_minus_1',
-                           'target_size': [224, 224, 3]
-                           }
 
     check_freeze_layers_train_on_catdog_datasets_int(train_catdog_dataset_path, val_catdog_dataset_path,
                                                      trainer_args)
