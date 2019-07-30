@@ -8,6 +8,7 @@ import numpy as np
 
 from stored import list_files
 from keras_trainer import Trainer
+from keras.regularizers import l2
 from keras_model_specs import ModelSpec
 from keras.applications import mobilenet
 from backports.tempfile import TemporaryDirectory
@@ -84,8 +85,7 @@ def check_train_on_catdog_datasets(train_path, val_path, trainer_args={}, expect
             assert actual == expected
 
 
-def check_freeze_layers_train_on_catdog_datasets_int(train_path, val_path, trainer_args={}, expected_model_spec={},
-                                                     expected_model_files=5, check_opts=True):
+def check_freeze_layers_train_on_catdog_datasets_int(train_path, val_path, trainer_args={}):
     with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
         trainer = Trainer(
             train_dataset_dir=train_path,
@@ -107,8 +107,7 @@ def check_freeze_layers_train_on_catdog_datasets_int(train_path, val_path, train
             assert actual == expected
 
 
-def check_freeze_layers_train_on_catdog_datasets_np_int(train_path, val_path, trainer_args={}, expected_model_spec={},
-                                                        expected_model_files=5, check_opts=True):
+def check_freeze_layers_train_on_catdog_datasets_np_int(train_path, val_path, trainer_args={}):
     with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
         trainer = Trainer(
             train_dataset_dir=train_path,
@@ -130,8 +129,7 @@ def check_freeze_layers_train_on_catdog_datasets_np_int(train_path, val_path, tr
             assert actual == expected
 
 
-def check_freeze_layers_train_on_catdog_datasets_str(train_path, val_path, freeze_layers_list_str, trainer_args={},
-                                                     expected_model_spec={}, expected_model_files=5, check_opts=True):
+def check_freeze_layers_train_on_catdog_datasets_str(train_path, val_path, freeze_layers_list_str, trainer_args={}):
     with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
         trainer = Trainer(
             train_dataset_dir=train_path,
@@ -153,9 +151,7 @@ def check_freeze_layers_train_on_catdog_datasets_str(train_path, val_path, freez
             assert actual == expected
 
 
-def check_freeze_layers_train_on_catdog_datasets_with_float(train_path, val_path, trainer_args={},
-                                                            expected_model_spec={}, expected_model_files=5,
-                                                            check_opts=True):
+def check_freeze_layers_train_on_catdog_datasets_with_float(train_path, val_path, trainer_args={}):
     with TemporaryDirectory() as output_model_dir, TemporaryDirectory() as output_logs_dir:
         trainer = Trainer(
             train_dataset_dir=train_path,
@@ -308,6 +304,20 @@ def test_mobilenet_v1_on_catdog_datasets_with_dropout(train_catdog_dataset_path,
                            }
     check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
                                    trainer_args, expected_model_spec)
+
+
+def test_mobilenet_v1_on_catdog_datasets_with_l2_regularization(train_catdog_dataset_path, val_catdog_dataset_path):
+    trainer_args = {'regularization_function': l2(0.00025),
+                    'model_spec': 'mobilenet_v1'
+                    }
+    expected_model_spec = {'klass': 'keras.applications.mobilenet.MobileNet',
+                           'name': 'mobilenet_v1',
+                           'preprocess_args': None,
+                           'preprocess_func': 'between_plus_minus_1',
+                           'target_size': [224, 224, 3]
+                           }
+    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
+                                   trainer_args, expected_model_spec, check_opts=False)
 
 
 def test_mobilenet_v1_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path):
