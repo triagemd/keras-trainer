@@ -4,9 +4,9 @@ from keras.layers import SeparableConv2D, Conv2D, Dense, BatchNormalization
 
 def set_model_regularization(model, regularization_function, bias_term=False):
     """
-    Go through every convolutional, dense and BN layer in the model and apply the specified regularization function
+    Go through every Convolutional, Dense and BN layer in the model and apply the specified regularization function
     Args:
-        model: Keras machine learning model
+        model: Keras Machine Learning model
         regularization_function: Regularization function to include in layers
         bias_term: If true will add the regularization in the layer bias regularizer
 
