@@ -69,6 +69,7 @@ def check_train_on_catdog_datasets(train_path, val_path, trainer_args={}, expect
                 'include_top': False,
                 'sgd_lr': 0.01,
                 'dropout_rate': 0.0,
+                'regularize_bias': False,
                 'activation': 'softmax',
                 'train_dataset_dir': 'redacted',
                 'val_dataset_dir': 'redacted',
@@ -211,19 +212,19 @@ def test_freeze_layers_on_catdog_datasets(train_catdog_dataset_path, val_catdog_
                            }
 
     check_freeze_layers_train_on_catdog_datasets_int(train_catdog_dataset_path, val_catdog_dataset_path,
-                                                     trainer_args, expected_model_spec)
+                                                     trainer_args)
 
     check_freeze_layers_train_on_catdog_datasets_np_int(train_catdog_dataset_path, val_catdog_dataset_path,
-                                                        trainer_args, expected_model_spec)
+                                                        trainer_args)
 
     check_freeze_layers_train_on_catdog_datasets_str(train_catdog_dataset_path, val_catdog_dataset_path,
-                                                     freeze_layer_lst, trainer_args, expected_model_spec)
+                                                     freeze_layer_lst, trainer_args)
 
     with pytest.raises(ValueError, match="<class 'numpy.float64'> layer type not supported to freeze layers, "
                        "we expect an int giving the layer index or a str containing "
                        "the name of the layer."):
         check_freeze_layers_train_on_catdog_datasets_with_float(train_catdog_dataset_path, val_catdog_dataset_path,
-                                                                trainer_args, expected_model_spec)
+                                                                trainer_args)
 
 
 def test_custom_model_on_catdog_datasets_with_multi_loss(train_catdog_dataset_path, val_catdog_dataset_path):
