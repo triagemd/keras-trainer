@@ -55,6 +55,7 @@ class Trainer(object):
         'max_queue_size': {'type': int, 'default': 16},
         'num_classes': {'type': int, 'default': None},
         'regularization_function': {'type': None, 'default': None},
+        'regularization_layers': {'type': None, 'default': None},
         'regularize_bias': {'type': bool, 'default': False},
         'verbose': {'type': bool, 'default': False},
         'model_kwargs': {'type': dict, 'default': {}},
@@ -189,7 +190,8 @@ class Trainer(object):
                                      "index or a str containing the name of the layer." % (type(layer)))
 
         if self.regularization_function is not None:
-            self.model = set_model_regularization(self.model, self.regularization_function, self.regularize_bias)
+            self.model = set_model_regularization(self.model, self.regularization_function,
+                                                  self.regularization_layers, self.regularize_bias)
 
         # Print the model summary.
         if self.verbose:
