@@ -14,6 +14,7 @@ from keras.preprocessing import image
 from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras_model_specs import ModelSpec
 from keras_trainer.parallel import make_parallel
+from keras_trainer.regularizations import set_model_regularization
 
 
 class Trainer(object):
@@ -53,6 +54,9 @@ class Trainer(object):
         'workers': {'type': int, 'default': 1},
         'max_queue_size': {'type': int, 'default': 16},
         'num_classes': {'type': int, 'default': None},
+        'regularization_function': {'type': None, 'default': None},
+        'regularization_layers': {'type': None, 'default': None},
+        'regularize_bias': {'type': bool, 'default': False},
         'verbose': {'type': bool, 'default': False},
         'model_kwargs': {'type': dict, 'default': {}},
         'save_training_options': {'type': bool, 'default': True}
@@ -112,7 +116,8 @@ class Trainer(object):
             self.train_gen = self.train_generator
 
         if self.num_classes is None and self.top_layers is None:
-            raise ValueError('num_classes must be set to use a custom train_generator with the default fully connected + softmax top_layers')
+            raise ValueError('num_classes must be set to use a custom train_generator with the default fully connected '
+                             '+ softmax top_layers')
 
         # Set up the validation data generator.
         print('Validation data')  # To complement Keras message
@@ -181,7 +186,12 @@ class Trainer(object):
                 elif isinstance(layer, str):
                     self.model.get_layer(layer).trainable = False
                 else:
-                    raise ValueError("%s layer type not supported to freeze layers, we expect an int giving the layer index or a str containing the name of the layer." % (type(layer)))
+                    raise ValueError("%s layer type not supported to freeze layers, we expect an int giving the layer "
+                                     "index or a str containing the name of the layer." % (type(layer)))
+
+        if self.regularization_function is not None:
+            self.model = set_model_regularization(self.model, self.regularization_function,
+                                                  self.regularization_layers, self.regularize_bias)
 
         # Print the model summary.
         if self.verbose:
