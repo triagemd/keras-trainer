@@ -26,7 +26,7 @@ def check_train_on_catdog_datasets(train_path, val_path, trainer_args={}, expect
             output_logs_dir=output_logs_dir,
             epochs=1,
             batch_size=1,
-            model_kwargs={'alpha': 1.0},
+            model_kwargs={'alpha': 0.25},
             **trainer_args
         )
         trainer.run()
@@ -59,7 +59,7 @@ def check_train_on_catdog_datasets(train_path, val_path, trainer_args={}, expect
                 'loss_function': 'categorical_crossentropy',
                 'max_queue_size': 16,
                 'metrics': ['accuracy'],
-                'model_kwargs': {'alpha': 1.0},
+                'model_kwargs': {'alpha': 0.25},
                 'momentum': 0.9,
                 'num_gpus': 0,
                 'output_logs_dir': 'redacted',
@@ -95,7 +95,7 @@ def check_freeze_layers_train_on_catdog_datasets_int(train_path, val_path, train
             output_logs_dir=output_logs_dir,
             epochs=1,
             batch_size=1,
-            model_kwargs={'alpha': 1.0},
+            model_kwargs={'alpha': 0.25},
             freeze_layers_list=list(range(1, 10)),
             **trainer_args
         )
@@ -117,7 +117,7 @@ def check_freeze_layers_train_on_catdog_datasets_np_int(train_path, val_path, tr
             output_logs_dir=output_logs_dir,
             epochs=1,
             batch_size=1,
-            model_kwargs={'alpha': 1.0},
+            model_kwargs={'alpha': 0.25},
             freeze_layers_list=list(np.arange(1, 10)),
             **trainer_args
         )
@@ -139,7 +139,7 @@ def check_freeze_layers_train_on_catdog_datasets_str(train_path, val_path, freez
             output_logs_dir=output_logs_dir,
             epochs=1,
             batch_size=1,
-            model_kwargs={'alpha': 1.0},
+            model_kwargs={'alpha': 0.25},
             freeze_layers_list=freeze_layers_list_str,
             **trainer_args
         )
@@ -161,7 +161,7 @@ def check_freeze_layers_train_on_catdog_datasets_with_float(train_path, val_path
             output_logs_dir=output_logs_dir,
             epochs=1,
             batch_size=1,
-            model_kwargs={'alpha': 1.0},
+            model_kwargs={'alpha': 0.25},
             freeze_layers_list=np.arange(1, 10, 0.5),
             **trainer_args
         )
