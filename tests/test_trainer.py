@@ -169,7 +169,9 @@ def check_freeze_layers_train_on_catdog_datasets_with_float(train_path, val_path
 
 
 def test_custom_model_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path):
-    model = mobilenet.MobileNet(alpha=0.25, include_top=False, pooling='avg', input_shape=[224, 224, 3])
+    model = keras.layers.Input(shape=(224, 224, 3))
+    model = keras.layers.GlobalAveragePooling2D(shape=(224, 224, 3))(model)
+
     top_layers = []
     # Set Dense Layer
     top_layers.append(keras.layers.Dense(2, name='dense'))
@@ -186,12 +188,12 @@ def test_custom_model_on_catdog_datasets(train_catdog_dataset_path, val_catdog_d
     # Final Model (last item of self.top_layer contains all of them assembled)
     model = keras.models.Model(model.input, top_layers[-1])
     trainer_args = {'custom_model': model,
-                    'model_spec': ModelSpec.get('mobilenet_custom', preprocess_args=[1, 2, 3],
+                    'model_spec': ModelSpec.get('custom', preprocess_args=[1, 2, 3],
                                                 preprocess_func='mean_subtraction',
                                                 target_size=[224, 224, 3])
                     }
     expected_model_spec = {'klass': None,
-                           'name': 'mobilenet_custom',
+                           'name': 'custom',
                            'preprocess_args': [1, 2, 3],
                            'preprocess_func': 'mean_subtraction',
                            'target_size': [224, 224, 3]
@@ -222,7 +224,8 @@ def test_freeze_layers_on_catdog_datasets(train_catdog_dataset_path, val_catdog_
 
 
 def test_custom_model_on_catdog_datasets_with_multi_loss(train_catdog_dataset_path, val_catdog_dataset_path):
-    model = mobilenet.MobileNet(alpha=0.25, include_top=False, pooling='avg', input_shape=[224, 224, 3])
+    model = keras.layers.Input(shape=(224, 224, 3))
+    model = keras.layers.GlobalAveragePooling2D(shape=(224, 224, 3))(model)
     top_layers = []
     # Set Dense Layer
     top_layers.append(keras.layers.Dense(2, name='dense'))
