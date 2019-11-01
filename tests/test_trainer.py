@@ -247,12 +247,12 @@ def test_custom_model_on_catdog_datasets_with_multi_loss(train_catdog_dataset_pa
                     'val_data_generator': ImageDataGeneratorSameMultiGT(n_outputs=2),
                     'loss_function': ['categorical_crossentropy', entropy_penalty_loss],
                     'loss_weights': [1.0, 0.25],
-                    'model_spec': ModelSpec.get('mobilenet_custom_2_outputs', preprocess_args=[1, 2, 3],
+                    'model_spec': ModelSpec.get('model_custom_2_outputs', preprocess_args=[1, 2, 3],
                                                 preprocess_func='mean_subtraction',
                                                 target_size=[224, 224, 3])
                     }
     expected_model_spec = {'klass': None,
-                           'name': 'mobilenet_custom_2_outputs',
+                           'name': 'model_custom_2_outputs',
                            'preprocess_args': [1, 2, 3],
                            'preprocess_func': 'mean_subtraction',
                            'target_size': [224, 224, 3]
