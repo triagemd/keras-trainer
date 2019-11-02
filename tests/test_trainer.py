@@ -11,7 +11,6 @@ from stored import list_files
 from keras_trainer import Trainer
 from keras.regularizers import l2
 from keras_model_specs import ModelSpec
-from keras.applications import mobilenet
 from backports.tempfile import TemporaryDirectory
 from keras_trainer.losses import entropy_penalty_loss
 from keras_trainer.data_generators import BalancedImageDataGenerator, ImageDataGeneratorSameMultiGT
@@ -122,6 +121,8 @@ def check_freeze_layers_train_on_catdog_datasets_np_int(train_path, val_path, tr
             freeze_layers_list=list(np.arange(1, 10)),
             **trainer_args
         )
+        
+        # Tested in other function
         # trainer.run()
 
         for i in range(1, 10):
@@ -144,6 +145,8 @@ def check_freeze_layers_train_on_catdog_datasets_str(train_path, val_path, freez
             freeze_layers_list=freeze_layers_list_str,
             **trainer_args
         )
+
+        # Tested in other function
         # trainer.run()
 
         for layer in freeze_layers_list_str:
@@ -340,7 +343,7 @@ def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override(train_catdog_d
     trainer_args = {'model_spec': ModelSpec.get(
         'mobilenet_v1',
         klass='keras.applications.mobilenet.MobileNet',
-        target_size=[224, 224, 3],
+        target_size=[112, 112, 3],
         preprocess_func='mean_subtraction',
         preprocess_args=[1, 2, 3]
     )}
@@ -348,7 +351,7 @@ def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override(train_catdog_d
                            'name': 'mobilenet_v1',
                            'preprocess_args': [1, 2, 3],
                            'preprocess_func': 'mean_subtraction',
-                           'target_size': [224, 224, 3]
+                           'target_size': [112, 112, 3]
                            }
     check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
                                    trainer_args, expected_model_spec)
