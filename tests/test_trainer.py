@@ -122,7 +122,7 @@ def check_freeze_layers_train_on_catdog_datasets_np_int(train_path, val_path, tr
             freeze_layers_list=list(np.arange(1, 10)),
             **trainer_args
         )
-        trainer.run()
+        # trainer.run()
 
         for i in range(1, 10):
             actual = trainer.model.layers[i].trainable
@@ -144,7 +144,7 @@ def check_freeze_layers_train_on_catdog_datasets_str(train_path, val_path, freez
             freeze_layers_list=freeze_layers_list_str,
             **trainer_args
         )
-        trainer.run()
+        # trainer.run()
 
         for layer in freeze_layers_list_str:
             actual = trainer.model.get_layer(layer).trainable
