@@ -32,8 +32,6 @@ def check_train_on_catdog_datasets(train_path, val_path, trainer_args={}, expect
         )
         trainer.run()
 
-        import pdb
-        pdb.set_trace()
         actual = list_files(output_model_dir, relative=True)
         assert len(actual) == expected_model_files
 
