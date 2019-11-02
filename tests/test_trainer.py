@@ -121,7 +121,7 @@ def check_freeze_layers_train_on_catdog_datasets_np_int(train_path, val_path, tr
             freeze_layers_list=list(np.arange(1, 10)),
             **trainer_args
         )
-        
+
         # Tested in other function
         # trainer.run()
 
