@@ -2,7 +2,6 @@ import os
 import json
 import keras
 import pytest
-import unittest
 import platform
 import tensorflow
 import numpy as np
@@ -352,19 +351,6 @@ def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override(train_catdog_d
                            'preprocess_args': [1, 2, 3],
                            'preprocess_func': 'mean_subtraction',
                            'target_size': [112, 112, 3]
-                           }
-    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
-                                   trainer_args, expected_model_spec)
-
-
-@unittest.skip("Memory Issues")
-def test_resnet50_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path):
-    trainer_args = {'model_spec': ModelSpec.get('resnet50', target_size=[512, 512, 3], preprocess_args=[1, 2, 3])}
-    expected_model_spec = {'klass': 'keras.applications.resnet50.ResNet50',
-                           'name': 'resnet50',
-                           'preprocess_args': [1, 2, 3],
-                           'preprocess_func': 'bgr_mean_subtraction',
-                           'target_size': [512, 512, 3]
                            }
     check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
                                    trainer_args, expected_model_spec)
