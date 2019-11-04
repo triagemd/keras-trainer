@@ -9,4 +9,4 @@ autopep8
 
 stored
 backports.tempfile
-tensorflow==1.12.2
+tensorflow~=1.12.0
