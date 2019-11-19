@@ -12,6 +12,7 @@ from keras.models import Model, load_model
 from keras.layers import Dense, Activation, Dropout
 from keras.preprocessing import image
 from keras.callbacks import TensorBoard, ModelCheckpoint
+from keras_trainer.callbacks import SensitivityCallback
 from keras_model_specs import ModelSpec
 from keras_trainer.parallel import make_parallel
 from keras_trainer.regularizations import set_model_regularization
@@ -21,45 +22,46 @@ class Trainer(object):
 
     OPTIONS = {
         'model_spec': {'type': str},
-        'output_model_dir': {'type': str},
         'output_logs_dir': {'type': str},
-        'train_dataset_dir': {'type': str, 'default': None},
-        'val_dataset_dir': {'type': str, 'default': None},
+        'output_model_dir': {'type': str},
+        'activation': {'type': str, 'default': 'softmax'},
+        'batch_size': {'type': int, 'default': 1},
+        'callback_list': {'type': list, 'default': []},
+        'checkpoint_path': {'type': str, 'default': None},
+        'class_weights': {'type': None, 'default': None},
         'custom_model': {'type': None, 'default': None},
+        'decay': {'type': float, 'default': 0.0005},
+        'dropout_rate': {'type': float, 'default': 0.0},
+        'epochs': {'type': int, 'default': 1},
+        'freeze_layers_list': {'type': None, 'default': None},
+        'loss_function': {'type': str, 'default': 'categorical_crossentropy'},
         'include_top': {'type': bool, 'default': False},
         'input_shape': {'type': None, 'default': None},
-        'checkpoint_path': {'type': str, 'default': None},
-        'train_data_generator': {'type': None, 'default': None},
-        'val_data_generator': {'type': None, 'default': None},
-        'train_generator': {'type': None, 'default': None},
-        'val_generator': {'type': None, 'default': None},
-        'top_layers': {'type': None, 'default': None},
-        'optimizer': {'type': None, 'default': None},
-        'callback_list': {'type': list, 'default': []},
-        'class_weights': {'type': None, 'default': None},
-        'loss_function': {'type': str, 'default': 'categorical_crossentropy'},
         'loss_weights': {'type': None, 'default': None},
-        'metrics': {'type': list, 'default': ['accuracy']},
-        'batch_size': {'type': int, 'default': 1},
-        'epochs': {'type': int, 'default': 1},
-        'decay': {'type': float, 'default': 0.0005},
-        'momentum': {'type': float, 'default': 0.9},
-        'sgd_lr': {'type': float, 'default': 0.01},
-        'pooling': {'type': str, 'default': 'avg'},
-        'activation': {'type': str, 'default': 'softmax'},
-        'dropout_rate': {'type': float, 'default': 0.0},
-        'freeze_layers_list': {'type': None, 'default': None},
-        'weights': {'type': str, 'default': 'imagenet'},
-        'num_gpus': {'type': int, 'default': 0},
-        'workers': {'type': int, 'default': 1},
         'max_queue_size': {'type': int, 'default': 16},
+        'metrics': {'type': list, 'default': ['accuracy']},
+        'model_kwargs': {'type': dict, 'default': {}},
+        'momentum': {'type': float, 'default': 0.9},
         'num_classes': {'type': int, 'default': None},
+        'num_gpus': {'type': int, 'default': 0},
+        'optimizer': {'type': None, 'default': None},
+        'pooling': {'type': str, 'default': 'avg'},
         'regularization_function': {'type': None, 'default': None},
         'regularization_layers': {'type': None, 'default': None},
         'regularize_bias': {'type': bool, 'default': False},
+        'save_training_options': {'type': bool, 'default': True},
+        'sgd_lr': {'type': float, 'default': 0.01},
+        'top_layers': {'type': None, 'default': None},
+        'train_dataset_dir': {'type': str, 'default': None},
+        'train_data_generator': {'type': None, 'default': None},
+        'train_generator': {'type': None, 'default': None},
+        'track_sensitivity': {'type': bool, 'default': False},
+        'val_data_generator': {'type': None, 'default': None},
+        'val_dataset_dir': {'type': str, 'default': None},
+        'val_generator': {'type': None, 'default': None},
         'verbose': {'type': bool, 'default': False},
-        'model_kwargs': {'type': dict, 'default': {}},
-        'save_training_options': {'type': bool, 'default': True}
+        'weights': {'type': str, 'default': 'imagenet'},
+        'workers': {'type': int, 'default': 1},
     }
 
     def __init__(self, **options):
@@ -238,6 +240,13 @@ class Trainer(object):
             mode='min'
         )
         self.callback_list.append(checkpoint_loss)
+
+        # Add sensitivity callback
+        if self.track_sensitivity:
+            sensitivity_callback = SensitivityCallback(self.val_gen,
+                                                       output_model_dir=self.output_model_dir,
+                                                       batch_size=self.batch_size)
+            self.callback_list.append(sensitivity_callback)
 
         # Set Tensorboard Visualization
         tensorboard = TensorBoard(
