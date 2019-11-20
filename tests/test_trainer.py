@@ -34,7 +34,7 @@ def check_train_on_catdog_datasets(train_path, val_path, trainer_args={}, expect
         assert len(actual) == expected_model_files
 
         actual = list_files(output_logs_dir, relative=True)
-        assert len(actual) == 2
+
         for path in actual:
             assert path.startswith('events.out.tfevents.')
 
@@ -63,6 +63,7 @@ def check_train_on_catdog_datasets(train_path, val_path, trainer_args={}, expect
                 'num_gpus': 0,
                 'output_logs_dir': 'redacted',
                 'output_model_dir': 'redacted',
+                'track_sensitivity': False,
                 'pooling': 'avg',
                 'save_training_options': True,
                 'include_top': False,
@@ -171,28 +172,8 @@ def check_freeze_layers_train_on_catdog_datasets_with_float(train_path, val_path
         trainer.run()
 
 
-def test_custom_model_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path):
-    input = keras.layers.Input(shape=(224, 224, 3))
-    model = keras.layers.Conv2D(3, (3, 3))(input)
-    model = keras.layers.GlobalAveragePooling2D()(model)
-    model = keras.models.Model(input, model)
-
-    top_layers = []
-    # Set Dense Layer
-    top_layers.append(keras.layers.Dense(2, name='dense'))
-    # Set Activation Layer
-    top_layers.append(keras.layers.Activation('softmax', name='act_softmax'))
-
-    # Layer Assembling
-    for i, layer in enumerate(top_layers):
-        if i == 0:
-            top_layers[i] = layer(model.output)
-        else:
-            top_layers[i] = layer(top_layers[i - 1])
-
-    # Final Model (last item of self.top_layer contains all of them assembled)
-    model = keras.models.Model(model.input, top_layers[-1])
-    trainer_args = {'custom_model': model,
+def test_custom_model_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path, simple_model):
+    trainer_args = {'custom_model': simple_model,
                     'model_spec': ModelSpec.get('custom', preprocess_args=[1, 2, 3],
                                                 preprocess_func='mean_subtraction',
                                                 target_size=[224, 224, 3])
@@ -206,6 +187,25 @@ def test_custom_model_on_catdog_datasets(train_catdog_dataset_path, val_catdog_d
 
     check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path, trainer_args,
                                    expected_model_spec, check_opts=False)
+
+
+def test_custom_model_track_sensitivity_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
+                                                           simple_model):
+    trainer_args = {'custom_model': simple_model,
+                    'model_spec': ModelSpec.get('custom', preprocess_args=[1, 2, 3],
+                                                preprocess_func='mean_subtraction',
+                                                target_size=[224, 224, 3]),
+                    'track_sensitivity': True
+                    }
+    expected_model_spec = {'klass': None,
+                           'name': 'custom',
+                           'preprocess_args': [1, 2, 3],
+                           'preprocess_func': 'mean_subtraction',
+                           'target_size': [224, 224, 3],
+                           }
+
+    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path, trainer_args,
+                                   expected_model_spec, check_opts=False, expected_model_files=6)
 
 
 def test_freeze_layers_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path):
@@ -228,26 +228,9 @@ def test_freeze_layers_on_catdog_datasets(train_catdog_dataset_path, val_catdog_
                                                                 trainer_args)
 
 
-def test_custom_model_on_catdog_datasets_with_multi_loss(train_catdog_dataset_path, val_catdog_dataset_path):
-    input = keras.layers.Input(shape=(224, 224, 3))
-    model = keras.layers.Conv2D(3, (3, 3))(input)
-    model = keras.layers.GlobalAveragePooling2D()(model)
-    model = keras.models.Model(input, model)
-    top_layers = []
-    # Set Dense Layer
-    top_layers.append(keras.layers.Dense(2, name='dense'))
-    # Set Activation Layer
-    top_layers.append(keras.layers.Activation('softmax', name='act_softmax'))
-
-    # Layer Assembling
-    for i, layer in enumerate(top_layers):
-        if i == 0:
-            top_layers[i] = layer(model.output)
-        else:
-            top_layers[i] = layer(top_layers[i - 1])
-
-    # Final Model (last item of self.top_layer contains all of them assembled)
-    model = keras.models.Model(model.input, [top_layers[-1], top_layers[-1]])
+def test_custom_model_on_catdog_datasets_with_multi_loss(train_catdog_dataset_path, val_catdog_dataset_path,
+                                                         simple_model):
+    model = keras.models.Model(simple_model.input, [simple_model.output, simple_model.output])
 
     trainer_args = {'custom_model': model,
                     'train_data_generator': ImageDataGeneratorSameMultiGT(n_outputs=2),
