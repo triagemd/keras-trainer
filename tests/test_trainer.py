@@ -5,6 +5,7 @@ import pytest
 import platform
 import tensorflow
 import numpy as np
+import pandas as pd
 
 from stored import list_files
 from keras_trainer import Trainer
@@ -12,7 +13,7 @@ from keras.regularizers import l2
 from keras_model_specs import ModelSpec
 from backports.tempfile import TemporaryDirectory
 from keras_trainer.losses import entropy_penalty_loss
-from keras_trainer.data_generators import BalancedImageDataGenerator, ImageDataGeneratorSameMultiGT
+from keras_trainer.data_generators import EnhancedImageDataGenerator
 
 
 def check_train_on_catdog_datasets(train_path, val_path, trainer_args={}, expected_model_spec={},
@@ -233,8 +234,6 @@ def test_custom_model_on_catdog_datasets_with_multi_loss(train_catdog_dataset_pa
     model = keras.models.Model(simple_model.input, [simple_model.output, simple_model.output])
 
     trainer_args = {'custom_model': model,
-                    'train_data_generator': ImageDataGeneratorSameMultiGT(n_outputs=2),
-                    'val_data_generator': ImageDataGeneratorSameMultiGT(n_outputs=2),
                     'loss_function': ['categorical_crossentropy', entropy_penalty_loss],
                     'loss_weights': [1.0, 0.25],
                     'model_spec': ModelSpec.get('model_custom_2_outputs', preprocess_args=[1, 2, 3],
@@ -248,13 +247,119 @@ def test_custom_model_on_catdog_datasets_with_multi_loss(train_catdog_dataset_pa
                            'target_size': [224, 224, 3]
                            }
     check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
-                                   trainer_args, expected_model_spec, expected_model_files=4, check_opts=False)
+                                   trainer_args, expected_model_spec, check_opts=False)
+
+
+def test_custom_model_on_catdog_datasets_with_probabilistic_labels(train_catdog_dataset_path, val_catdog_dataset_path,
+                                                                   train_catdog_dataframe_path,
+                                                                   val_catdog_dataframe_path,
+                                                                   simple_model):
+    train_dataframe = pd.read_json(train_catdog_dataframe_path)
+    val_dataframe = pd.read_json(val_catdog_dataframe_path)
+    trainer_args = {
+        'custom_model': simple_model,
+        'train_generator': EnhancedImageDataGenerator().flow_from_dataframe(
+            train_dataframe,
+            directory=train_catdog_dataset_path,
+            x_col="filename",
+            y_col="class_probabilities",
+            target_size=(224, 224)
+        ),
+        'model_spec': 'mobilenet_v1',
+        'num_classes': 2,
+        'val_generator': EnhancedImageDataGenerator().flow_from_dataframe(
+            val_dataframe,
+            directory=val_catdog_dataset_path,
+            x_col="filename",
+            y_col="class_probabilities",
+            target_size=(224, 224)
+        ),
+    }
+
+    expected_model_spec = {'klass': None,
+                           'name': 'model_custom_2_outputs',
+                           'preprocess_args': [1, 2, 3],
+                           'preprocess_func': 'mean_subtraction',
+                           'target_size': [224, 224, 3]
+                           }
+    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
+                                   trainer_args, expected_model_spec, check_opts=False)
+
+
+def test_custom_model_on_catdog_datasets_with_mix_directory_dataframe(train_catdog_dataset_path,
+                                                                      val_catdog_dataset_path,
+                                                                      train_catdog_dataframe_path,
+                                                                      simple_model):
+    train_dataframe = pd.read_json(train_catdog_dataframe_path)
+    trainer_args = {
+        'custom_model': simple_model,
+        'train_generator': EnhancedImageDataGenerator().flow_from_dataframe(
+            train_dataframe,
+            directory=train_catdog_dataset_path,
+            x_col="filename",
+            y_col="class_probabilities",
+            target_size=(224, 224)
+        ),
+        'model_spec': 'mobilenet_v1',
+        'num_classes': 2,
+    }
+
+    expected_model_spec = {'klass': None,
+                           'name': 'model_custom_2_outputs',
+                           'preprocess_args': [1, 2, 3],
+                           'preprocess_func': 'mean_subtraction',
+                           'target_size': [224, 224, 3]
+                           }
+    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
+                                   trainer_args, expected_model_spec, check_opts=False)
+
+
+def test_custom_model_on_catdog_datasets_with_probabilistic_labels_from_constructor(train_catdog_dataset_path,
+                                                                                    val_catdog_dataset_path,
+                                                                                    train_catdog_dataframe_path,
+                                                                                    val_catdog_dataframe_path,
+                                                                                    simple_model):
+    trainer_args = {
+        'custom_model': simple_model,
+        'train_dataset_dataframe': train_catdog_dataframe_path,
+        'val_dataset_dataframe': val_catdog_dataframe_path,
+        'model_spec': 'mobilenet_v1',
+        'num_classes': 2,
+    }
+
+    expected_model_spec = {'klass': None,
+                           'name': 'model_custom_2_outputs',
+                           'preprocess_args': [1, 2, 3],
+                           'preprocess_func': 'mean_subtraction',
+                           'target_size': [224, 224, 3]
+                           }
+    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
+                                   trainer_args, expected_model_spec, check_opts=False)
+
+    train_dataframe = pd.read_json(train_catdog_dataframe_path)
+    val_dataframe = pd.read_json(val_catdog_dataframe_path)
+
+    trainer_args = {
+        'custom_model': simple_model,
+        'train_dataset_dataframe': train_dataframe,
+        'val_dataset_dataframe': val_dataframe,
+        'model_spec': 'mobilenet_v1',
+        'num_classes': 2,
+    }
+
+    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
+                                   trainer_args, expected_model_spec, check_opts=False)
 
 
 def test_mobilenet_v1_on_catdog_datasets_with_balanced_generator(train_catdog_dataset_path, val_catdog_dataset_path):
     trainer_args = {
-        'train_data_generator': BalancedImageDataGenerator(),
-        'model_spec': 'mobilenet_v1'
+        'train_generator': EnhancedImageDataGenerator().flow_from_directory(
+            train_catdog_dataset_path,
+            iterator_mode='equiprobable',
+            target_size=(224, 224)
+        ),
+        'model_spec': 'mobilenet_v1',
+        'num_classes': 2
     }
     expected_model_spec = {'klass': 'keras.applications.mobilenet.MobileNet',
                            'name': 'mobilenet_v1',
