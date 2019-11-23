@@ -32,7 +32,7 @@ class SensitivityCallback(Callback):
             y_true += np.argmax(batch[1], axis=1).tolist()
             y_pred += np.argmax(self.model.predict(batch[0]), axis=1).tolist()
 
-        # Compute sensitivity and save model if is better than previous epochs
+        # Compute the (unweighted) average sensitivity and save model if is better than previous epochs
         sensitivity = recall_score(y_true, y_pred, average='macro')
         logs['validation_sensitivity'] = sensitivity
         print('Epoch {epoch}, sensitivity={sensitivity}'.format(epoch=epoch, sensitivity=sensitivity))
