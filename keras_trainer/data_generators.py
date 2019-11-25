@@ -252,7 +252,7 @@ class EnhancedDirectoryIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
         image_data_generator: Instance of `ImageDataGenerator`
             to use for random transformations and normalization.
         random_crop_size: Size of the random crop. Either a percentage of the original image (0,1) that will do square
-        crop or a fixed size (tuple) or integer where integer will set both dimensions as equal.
+        crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
         n_outputs: Integer indicating the number of outputs of the model. It will duplicate the labels. That is useful for
              multi-loss functions.
         iterator_mode: - None: Each sample is selected randomly.
