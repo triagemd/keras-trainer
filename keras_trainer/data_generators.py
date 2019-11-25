@@ -217,7 +217,7 @@ class EnhancedIterator(Iterator):
             - None: Each sample is selected randomly.
             - 'equiprobable': Each sample is selected randomly with uniform class probability, so all the classes are
                                   evenly distributed. We can have repetition of samples during the same epoch.
-            classes: Array where every index is the sample class. Is the classes parameter of a Keras generator.
+            classes: Array where every index is the sample class. It belongs to the classes parameter of a Keras generator.
 
         """
         self.mode = mode
