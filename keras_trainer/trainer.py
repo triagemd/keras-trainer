@@ -327,6 +327,12 @@ class Trainer(object):
             loss_weights=self.loss_weights
         )
 
+        if self.train_generator.samples // self.batch_size == 0:
+            raise ValueError('Batch size is higher than the total number of training samples')
+
+        if self.val_generator.samples // self.batch_size == 0:
+            raise ValueError('Batch size is higher than the total number of validation samples')
+
         # Model training
         self.history = self.model.fit_generator(
             self.train_generator,
