@@ -40,7 +40,7 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
             image_data_generator: Instance of `ImageDataGenerator`
                 to use for random transformations and normalization.
             random_crop_size: Size of the random crop. Either a percentage of the original image (0,1) that will do square
-                crop or a fixed size (tuple) or integer where integer will set both dimensions as equal.
+                crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
             target_size: tuple of integers, dimensions to resize input images to.
             target_size: tuple of integers, dimensions to resize input images to.
             color_mode: One of `"rgb"`, `"rgba"`, `"grayscale"`.
