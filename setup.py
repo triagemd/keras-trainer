@@ -14,7 +14,7 @@ setup(
     install_requires=[
         'Keras==2.2.4',
         'h5py',
-        'pandas'
+        'pandas',
         'Pillow',
         'keras-model-specs==1.2.0',
         'sklearn'
