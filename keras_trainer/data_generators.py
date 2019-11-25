@@ -18,7 +18,7 @@ backend = get_keras_submodule('backend')
 
 
 class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
-    """Adds methods related to getting batches from filenames
+    """Adds methods related to getting batches from filenames.
     It includes the logic to transform image files to batches.
     Addition of a method to random crop images.
     """
