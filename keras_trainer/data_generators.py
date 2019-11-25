@@ -673,7 +673,7 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
 
     def _filter_valid_filepaths(self, df, x_col):
         """Keep only dataframe rows with valid filenames
-        # Arguments
+        Args:
             df: Pandas dataframe containing filenames in a column
             x_col: string, column in `df` that contains the filenames or filepaths
         # Returns
