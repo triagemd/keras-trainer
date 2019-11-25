@@ -676,7 +676,7 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
         Args:
             df: Pandas dataframe containing filenames in a column
             x_col: string, column in `df` that contains the filenames or filepaths
-        # Returns
+       Returns:
             absolute paths to image files
         """
         filepaths = df[x_col].map(
