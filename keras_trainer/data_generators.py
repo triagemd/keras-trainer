@@ -404,7 +404,7 @@ class EnhancedDirectoryIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
 
 class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
     """Iterator capable of reading images from a directory on disk through a dataframe.
-    # Arguments
+    Args:
         dataframe: Pandas dataframe containing the filepaths relative to
             `directory` (or absolute paths if `directory` is None) of the
             images in a string column. It should include other column/s
