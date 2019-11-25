@@ -13,8 +13,8 @@ from keras_preprocessing import get_keras_submodule
 backend = get_keras_submodule('backend')
 
 
-# These functions are modifications on the original Keras functions, for the documentation of the classes we refer the
-# user to https://github.com/keras-team/keras-preprocessing/blob/master/keras_preprocessing/image.py
+# These functions are modifications on the original Keras functions, for the original documentation of the classes
+# we refer the user to https://github.com/keras-team/keras-preprocessing/tree/master/keras_preprocessing/image
 
 
 class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
@@ -39,6 +39,9 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
         # Arguments
             image_data_generator: Instance of `ImageDataGenerator`
                 to use for random transformations and normalization.
+            random_crop_size: Size of the random crop. Either a percentage of the original image (0,1) that will do square
+                crop or a fixed size (tuple) or integer where integer will set both dimensions as equal.
+            target_size: tuple of integers, dimensions to resize input images to.
             target_size: tuple of integers, dimensions to resize input images to.
             color_mode: One of `"rgb"`, `"rgba"`, `"grayscale"`.
                 Color mode to read images.
@@ -250,6 +253,11 @@ class EnhancedDirectoryIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
             to use for random transformations and normalization.
         random_crop_size: Size of the random crop. Either a percentage of the original image (0,1) that will do square
         crop or a fixed size (tuple) or integer where integer will set both dimensions as equal.
+        n_outputs: Integer indicating the number of outputs of the model. It will duplicate the labels. That is useful for
+             multi-loss functions.
+        iterator_mode: - None: Each sample is selected randomly.
+                       - 'equiprobable': Each sample is selected randomly with uniform class probability, so all the
+                     classes are evenly distributed. We can have repetition of samples during the same epoch.
         target_size: tuple of integers, dimensions to resize input images to.
         color_mode: One of `"rgb"`, `"rgba"`, `"grayscale"`.
             Color mode to read images.
@@ -415,6 +423,11 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
         image_data_generator: Instance of `ImageDataGenerator` to use for
             random transformations and normalization. If None, no transformations
             and normalizations are made.
+        n_outputs: Integer indicating the number of outputs of the model. It will duplicate the labels. That is useful for
+             multi-loss functions.
+        iterator_mode: - None: Each sample is selected randomly.
+                       - 'equiprobable': Each sample is selected randomly with uniform class probability, so all the
+                     classes are evenly distributed. We can have repetition of samples during the same epoch.
         x_col: string, column in `dataframe` that contains the filenames (or
             absolute paths if `directory` is `None`).
         y_col: string or list, column/s in `dataframe` that has the target data.
@@ -698,7 +711,25 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
 class EnhancedImageDataGenerator(ImageDataGenerator):
     """
 
-    ImageDataGenerator that has can perform random crops if specified in flow_from_directory function
+    This is a modification of the Keras class ImageDataGenerator that includes some extra functionalities.
+    The image data generator has a new option `random_crop_size` that if specified will perform random crops prior to
+    resize the image to the specified target size.
+
+    - random_crop_size:  Size of the random crop. Either a percentage of the original image (0,1) that will do square
+        crop or a fixed size (tuple) or integer where integer will set both dimensions as equal.
+        target_size: tuple of integers, dimensions to resize input images to.
+
+    The functions `flow_from_dataframe` and `flow_from_directory` incorporate the following extra variables:
+
+    - n_outputs: Integer indicating the number of outputs of the model. It will duplicate the labels. That is useful for
+    multi-loss functions.
+    - iterator_mode: - None: Each sample is selected randomly.
+                     - 'equiprobable': Each sample is selected randomly with uniform class probability, so all the
+                     classes are evenly distributed. We can have repetition of samples during the same epoch.
+
+
+    The `flow_from_directory` function accepts class_mode='probabilistic' to handle list of labels in a
+    dataframe column.
 
     """
 
