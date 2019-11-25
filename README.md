@@ -2,13 +2,17 @@
 
 ## Keras Trainer
 
-An abstraction to train Keras CNN models for image classification. To use it is required to have also installed the `keras-model-specs` package.
+An abstraction to train Keras + Tensorflow CNN models for image classification. 
 
-The list of models supported is the following:
+This package provides an easy framework to apply extra training steps as **image preprocessing**, **random cropping**, **balanced sampling**, training with **probabilistic labels** and using **multi-loss functions**.
 
-`vgg16`, `vgg19`, `resnet50`, `resnet152`, `mobilenet_v1`, `xception`,
-`inception_resnet_v2`, `inception_v3`, `inception_v4`, `nasnet_large`, `nasnet_mobile`, `densenet_169`,
-`densenet_121`, `densenet_201`
+To use it is required to have also installed the `keras-model-specs` package.
+
+The models supported are the following:
+
+`vgg16`, `vgg19`, `resnet50`, `resnet152`, `mobilenet_v1`, `mobilenet_v2`,`xception`,
+`inception_resnet_v2`, `inception_v3`, `nasnet_large`, `nasnet_mobile`, `densenet_169`,
+`densenet_121`, `densenet_201`.
 
 And the defaults are specified [here](https://github.com/triagemd/keras-model-specs/blob/master/keras_model_specs/model_specs.json).
 
