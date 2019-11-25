@@ -728,7 +728,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
                      classes are evenly distributed. We can have repetition of samples during the same epoch.
 
 
-    The `flow_from_directory` function accepts class_mode='probabilistic' to handle list of labels in a
+    The `flow_from_directory` function accepts class_mode='probabilistic' to handle a list of labels in a
     dataframe column.
 
     """
