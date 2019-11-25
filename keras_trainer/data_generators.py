@@ -716,7 +716,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
     resize the image to the specified target size.
 
     - random_crop_size:  Size of the random crop. Either a percentage of the original image (0,1) that will do square
-        crop or a fixed size (tuple) or integer where integer will set both dimensions as equal.
+        crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
         target_size: tuple of integers, dimensions to resize input images to.
 
     The functions `flow_from_dataframe` and `flow_from_directory` incorporate the following extra variables:
