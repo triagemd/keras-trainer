@@ -57,11 +57,11 @@ class Trainer(object):
         'top_layers': {'type': None, 'default': None},
         'track_sensitivity': {'type': bool, 'default': False},
         'train_data_generator': {'type': None, 'default': None},
-        'train_dataset_dataframe': {'type': str, 'default': None},
+        'train_dataset_dataframe_path': {'type': str, 'default': None},
         'train_dataset_dir': {'type': str, 'default': None},
         'train_generator': {'type': None, 'default': None},
         'val_data_generator': {'type': None, 'default': None},
-        'val_dataset_dataframe': {'type': str, 'default': None},
+        'val_dataset_dataframe_path': {'type': str, 'default': None},
         'val_dataset_dir': {'type': str, 'default': None},
         'val_generator': {'type': None, 'default': None},
         'verbose': {'type': bool, 'default': False},
@@ -118,7 +118,10 @@ class Trainer(object):
         )
 
         if not self.train_generator:
-            if self.train_dataset_dataframe is None and os.path.isdir(self.train_dataset_dir):
+            if self.train_dataset_dir is None or not os.path.isdir(self.train_dataset_dir):
+                raise ValueError('`train_dataset_dir` must be a valid directory')
+
+            if self.train_dataset_dataframe_path is None:
                 self.train_generator = self.train_data_generator.flow_from_directory(
                     self.train_dataset_dir,
                     iterator_mode=self.iterator_mode,
@@ -127,15 +130,14 @@ class Trainer(object):
                     target_size=self.model_spec.target_size[:2],
                     class_mode='categorical'
                 )
-            elif self.train_dataset_dataframe is not None:
-                if isinstance(self.train_dataset_dataframe, pd.DataFrame):
-                    pass
-                elif self.train_dataset_dataframe.endswith('json'):
-                    self.train_dataset_dataframe = pd.read_json(self.train_dataset_dataframe)
-                elif self.train_dataset_dataframe.endswith('csv'):
-                    self.train_dataset_dataframe = pd.read_csv(self.train_dataset_dataframe)
+
+            else:
+                if self.train_dataset_dataframe_path.endswith('json'):
+                    self.train_dataset_dataframe = pd.read_json(self.train_dataset_dataframe_path)
+                elif self.train_dataset_dataframe_path.endswith('csv'):
+                    self.train_dataset_dataframe = pd.read_csv(self.train_dataset_dataframe_path)
                 else:
-                    raise ValueError('`train_dataset_dataframe` a json, a csv or a DataFrame object')
+                    raise ValueError('`train_dataset_dataframe` a json or a csv valid path')
                 # We assume the dataframe will have the labels in 'class_probabilities' column and
                 # filenames under 'filename' column
                 self.train_generator = self.train_data_generator.flow_from_dataframe(
@@ -149,8 +151,6 @@ class Trainer(object):
                     target_size=self.model_spec.target_size[:2],
                     class_mode='probabilistic'
                 )
-            else:
-                raise ValueError('`train_dataset_dir` must be specified')
 
             self.num_classes = self.num_classes or self.train_generator.num_classes
 
@@ -166,7 +166,11 @@ class Trainer(object):
         )
 
         if not self.val_generator:
-            if self.val_dataset_dataframe is None and os.path.isdir(self.val_dataset_dir):
+
+            if self.val_dataset_dir is None or not os.path.isdir(self.val_dataset_dir):
+                raise ValueError('`val_dataset_dir` must be a valid directory')
+
+            if self.val_dataset_dataframe_path is None:
                 self.val_generator = self.val_data_generator.flow_from_directory(
                     self.val_dataset_dir,
                     n_outputs=self.n_outputs,
@@ -175,13 +179,11 @@ class Trainer(object):
                     class_mode='categorical',
                     shuffle=False
                 )
-            elif self.val_dataset_dataframe is not None:
-                if isinstance(self.val_dataset_dataframe, pd.DataFrame):
-                    pass
-                elif self.val_dataset_dataframe.endswith('json'):
-                    self.val_dataset_dataframe = pd.read_json(self.val_dataset_dataframe)
-                elif self.val_dataset_dataframe.endswith('csv'):
-                    self.val_dataset_dataframe = pd.read_csv(self.val_dataset_dataframe)
+            else:
+                if self.val_dataset_dataframe_path.endswith('json'):
+                    self.val_dataset_dataframe = pd.read_json(self.val_dataset_dataframe_path)
+                elif self.val_dataset_dataframe_path.endswith('csv'):
+                    self.val_dataset_dataframe = pd.read_csv(self.val_dataset_dataframe_path)
                 else:
                     raise ValueError('`val_dataset_dataframe` must be a json, a csv or a DataFrame object')
                 # We assume the dataframe will have the labels in 'class_probabilities' column and
@@ -196,8 +198,6 @@ class Trainer(object):
                     target_size=self.model_spec.target_size[:2],
                     class_mode='probabilistic'
                 )
-            else:
-                raise ValueError('`val_dataset_dir` must be specified')
 
         # Load a keras model from a checkpoint
         if self.checkpoint_path is not None:
