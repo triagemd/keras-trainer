@@ -1,21 +1,22 @@
 import os
-import json
-import platform
-import keras
-import tensorflow
 import copy
+import json
+import keras
+import platform
+import tensorflow
 import numpy as np
+import pandas as pd
 
 from six import string_types
 from keras import optimizers
 from keras.models import Model, load_model
 from keras.layers import Dense, Activation, Dropout
-from keras.preprocessing import image
 from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras_trainer.callbacks import SensitivityCallback
 from keras_model_specs import ModelSpec
 from keras_trainer.parallel import make_parallel
 from keras_trainer.regularizations import set_model_regularization
+from keras_trainer.data_generators import EnhancedImageDataGenerator
 
 
 class Trainer(object):
@@ -37,6 +38,7 @@ class Trainer(object):
         'loss_function': {'type': str, 'default': 'categorical_crossentropy'},
         'include_top': {'type': bool, 'default': False},
         'input_shape': {'type': None, 'default': None},
+        'iterator_mode': {'type': str, 'default': None},
         'loss_weights': {'type': None, 'default': None},
         'max_queue_size': {'type': int, 'default': 16},
         'metrics': {'type': list, 'default': ['accuracy']},
@@ -46,17 +48,20 @@ class Trainer(object):
         'num_gpus': {'type': int, 'default': 0},
         'optimizer': {'type': None, 'default': None},
         'pooling': {'type': str, 'default': 'avg'},
+        'random_crop_size': {'type': float, 'default': None},
         'regularization_function': {'type': None, 'default': None},
         'regularization_layers': {'type': None, 'default': None},
         'regularize_bias': {'type': bool, 'default': False},
         'save_training_options': {'type': bool, 'default': True},
         'sgd_lr': {'type': float, 'default': 0.01},
         'top_layers': {'type': None, 'default': None},
-        'train_dataset_dir': {'type': str, 'default': None},
-        'train_data_generator': {'type': None, 'default': None},
-        'train_generator': {'type': None, 'default': None},
         'track_sensitivity': {'type': bool, 'default': False},
+        'train_data_generator': {'type': None, 'default': None},
+        'train_dataset_dataframe_path': {'type': str, 'default': None},
+        'train_dataset_dir': {'type': str, 'default': None},
+        'train_generator': {'type': None, 'default': None},
         'val_data_generator': {'type': None, 'default': None},
+        'val_dataset_dataframe_path': {'type': str, 'default': None},
         'val_dataset_dir': {'type': str, 'default': None},
         'val_generator': {'type': None, 'default': None},
         'verbose': {'type': bool, 'default': False},
@@ -91,10 +96,16 @@ class Trainer(object):
             'options': options
         }
 
+        if isinstance(self.loss_function, list) and len(self.loss_function) > 1:
+            self.n_outputs = len(self.loss_function)
+        else:
+            self.n_outputs = 1
+
         # Set up the training data generator.
         print('Training data')  # To complement Keras message
 
-        self.train_data_generator = self.train_data_generator or image.ImageDataGenerator(
+        self.train_data_generator = self.train_data_generator or EnhancedImageDataGenerator(
+            random_crop_size=self.random_crop_size,
             rotation_range=180,
             width_shift_range=0,
             height_shift_range=0,
@@ -107,15 +118,41 @@ class Trainer(object):
         )
 
         if not self.train_generator:
-            self.train_gen = self.train_data_generator.flow_from_directory(
-                self.train_dataset_dir,
-                batch_size=self.batch_size,
-                target_size=self.model_spec.target_size[:2],
-                class_mode='categorical'
-            )
-            self.num_classes = self.num_classes or self.train_gen.num_classes
-        else:
-            self.train_gen = self.train_generator
+            if self.train_dataset_dir is None or not os.path.isdir(self.train_dataset_dir):
+                raise ValueError('`train_dataset_dir` must be a valid directory')
+
+            if self.train_dataset_dataframe_path is None:
+                self.train_generator = self.train_data_generator.flow_from_directory(
+                    self.train_dataset_dir,
+                    iterator_mode=self.iterator_mode,
+                    n_outputs=self.n_outputs,
+                    batch_size=self.batch_size,
+                    target_size=self.model_spec.target_size[:2],
+                    class_mode='categorical'
+                )
+
+            else:
+                if self.train_dataset_dataframe_path.endswith('json'):
+                    self.train_dataset_dataframe = pd.read_json(self.train_dataset_dataframe_path)
+                elif self.train_dataset_dataframe_path.endswith('csv'):
+                    self.train_dataset_dataframe = pd.read_csv(self.train_dataset_dataframe_path)
+                else:
+                    raise ValueError('`train_dataset_dataframe` a json or a csv valid path')
+                # We assume the dataframe will have the labels in 'class_probabilities' column and
+                # filenames under 'filename' column
+                self.train_generator = self.train_data_generator.flow_from_dataframe(
+                    self.train_dataset_dataframe,
+                    directory=self.train_dataset_dir,
+                    batch_size=self.batch_size,
+                    x_col="filename",
+                    y_col="class_probabilities",
+                    iterator_mode=self.iterator_mode,
+                    n_outputs=self.n_outputs,
+                    target_size=self.model_spec.target_size[:2],
+                    class_mode='probabilistic'
+                )
+
+            self.num_classes = self.num_classes or self.train_generator.num_classes
 
         if self.num_classes is None and self.top_layers is None:
             raise ValueError('num_classes must be set to use a custom train_generator with the default fully connected '
@@ -124,26 +161,51 @@ class Trainer(object):
         # Set up the validation data generator.
         print('Validation data')  # To complement Keras message
 
-        self.val_data_generator = self.val_data_generator or image.ImageDataGenerator(
+        self.val_data_generator = self.val_data_generator or EnhancedImageDataGenerator(
             preprocessing_function=self.model_spec.preprocess_input
         )
 
-        self.val_gen = self.val_generator or self.val_data_generator.flow_from_directory(
-            self.val_dataset_dir,
-            batch_size=self.batch_size,
-            target_size=self.model_spec.target_size[:2],
-            class_mode='categorical',
-            shuffle=False
-        )
+        if not self.val_generator:
 
-        # Load model from a checkpoint
+            if self.val_dataset_dir is None or not os.path.isdir(self.val_dataset_dir):
+                raise ValueError('`val_dataset_dir` must be a valid directory')
+
+            if self.val_dataset_dataframe_path is None:
+                self.val_generator = self.val_data_generator.flow_from_directory(
+                    self.val_dataset_dir,
+                    n_outputs=self.n_outputs,
+                    batch_size=self.batch_size,
+                    target_size=self.model_spec.target_size[:2],
+                    class_mode='categorical',
+                    shuffle=False
+                )
+            else:
+                if self.val_dataset_dataframe_path.endswith('json'):
+                    self.val_dataset_dataframe = pd.read_json(self.val_dataset_dataframe_path)
+                elif self.val_dataset_dataframe_path.endswith('csv'):
+                    self.val_dataset_dataframe = pd.read_csv(self.val_dataset_dataframe_path)
+                else:
+                    raise ValueError('`val_dataset_dataframe` must be a json, a csv or a DataFrame object')
+                # We assume the dataframe will have the labels in 'class_probabilities' column and
+                # filenames under 'filename' column
+                self.val_generator = self.val_data_generator.flow_from_dataframe(
+                    self.val_dataset_dataframe,
+                    directory=self.val_dataset_dir,
+                    batch_size=self.batch_size,
+                    x_col="filename",
+                    y_col="class_probabilities",
+                    n_outputs=self.n_outputs,
+                    target_size=self.model_spec.target_size[:2],
+                    class_mode='probabilistic'
+                )
+
+        # Load a keras model from a checkpoint
         if self.checkpoint_path is not None:
             self.model = load_model(self.checkpoint_path)
         # Load a custom model (not supported by keras-model-specs)
         elif self.custom_model is not None and self.model_spec.klass is None:
             self.model = self.custom_model
         # Load a model supported by keras-model-specs
-
         else:
             self.model = self.model_spec.klass(
                 input_shape=self.input_shape or self.model_spec.target_size,
@@ -151,7 +213,6 @@ class Trainer(object):
                 include_top=self.include_top,
                 pooling=self.pooling
             )
-
             # If top layers are given include them, else include a Dense Layer with Softmax/Sigmoid
             if self.top_layers is None:
                 # Init list of layers
@@ -243,7 +304,7 @@ class Trainer(object):
 
         # Add sensitivity callback
         if self.track_sensitivity:
-            sensitivity_callback = SensitivityCallback(self.val_gen,
+            sensitivity_callback = SensitivityCallback(self.val_generator,
                                                        output_model_dir=self.output_model_dir,
                                                        batch_size=self.batch_size)
             self.callback_list.append(sensitivity_callback)
@@ -266,15 +327,21 @@ class Trainer(object):
             loss_weights=self.loss_weights
         )
 
+        if self.train_generator.samples // self.batch_size == 0:
+            raise ValueError('Batch size is higher than the total number of training samples')
+
+        if self.val_generator.samples // self.batch_size == 0:
+            raise ValueError('Batch size is higher than the total number of validation samples')
+
         # Model training
         self.history = self.model.fit_generator(
-            self.train_gen,
+            self.train_generator,
             verbose=1,
-            steps_per_epoch=self.train_gen.samples // self.batch_size,
+            steps_per_epoch=self.train_generator.samples // self.batch_size,
             epochs=self.epochs,
             callbacks=self.callback_list,
-            validation_data=self.val_gen,
-            validation_steps=self.val_gen.samples // self.batch_size,
+            validation_data=self.val_generator,
+            validation_steps=self.val_generator.samples // self.batch_size,
             workers=self.workers,
             class_weight=self.class_weights,
             max_queue_size=self.max_queue_size

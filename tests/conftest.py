@@ -9,8 +9,18 @@ def train_catdog_dataset_path():
 
 
 @pytest.fixture('session')
+def train_catdog_dataset_json_path():
+    return os.path.abspath(os.path.join('tests', 'files', 'catdog', 'train_data.json'))
+
+
+@pytest.fixture('session')
 def val_catdog_dataset_path():
     return os.path.abspath(os.path.join('tests', 'files', 'catdog', 'val'))
+
+
+@pytest.fixture('session')
+def val_catdog_dataset_json_path():
+    return os.path.abspath(os.path.join('tests', 'files', 'catdog', 'val_data.json'))
 
 
 @pytest.fixture('function')
