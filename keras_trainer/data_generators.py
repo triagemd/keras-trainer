@@ -18,7 +18,7 @@ backend = get_keras_submodule('backend')
 
 
 class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
-    """Adds methods related to getting batches from filenames
+    """Adds methods related to getting batches from filenames.
     It includes the logic to transform image files to batches.
     Addition of a method to random crop images.
     """
@@ -40,7 +40,7 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
             image_data_generator: Instance of `ImageDataGenerator`
                 to use for random transformations and normalization.
             random_crop_size: Size of the random crop. Either a percentage of the original image (0,1) that will do square
-                crop or a fixed size (tuple) or integer where integer will set both dimensions as equal.
+                crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
             target_size: tuple of integers, dimensions to resize input images to.
             target_size: tuple of integers, dimensions to resize input images to.
             color_mode: One of `"rgb"`, `"rgba"`, `"grayscale"`.
@@ -217,7 +217,7 @@ class EnhancedIterator(Iterator):
             - None: Each sample is selected randomly.
             - 'equiprobable': Each sample is selected randomly with uniform class probability, so all the classes are
                                   evenly distributed. We can have repetition of samples during the same epoch.
-            classes: Array where every index is the sample class. Is the classes parameter of a Keras generator.
+            classes: Array where every index is the sample class. It belongs to the classes parameter of a Keras generator.
 
         """
         self.mode = mode
@@ -252,7 +252,7 @@ class EnhancedDirectoryIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
         image_data_generator: Instance of `ImageDataGenerator`
             to use for random transformations and normalization.
         random_crop_size: Size of the random crop. Either a percentage of the original image (0,1) that will do square
-        crop or a fixed size (tuple) or integer where integer will set both dimensions as equal.
+        crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
         n_outputs: Integer indicating the number of outputs of the model. It will duplicate the labels. That is useful for
              multi-loss functions.
         iterator_mode: - None: Each sample is selected randomly.
@@ -404,7 +404,7 @@ class EnhancedDirectoryIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
 
 class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
     """Iterator capable of reading images from a directory on disk through a dataframe.
-    # Arguments
+    Args:
         dataframe: Pandas dataframe containing the filepaths relative to
             `directory` (or absolute paths if `directory` is None) of the
             images in a string column. It should include other column/s
@@ -673,10 +673,10 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
 
     def _filter_valid_filepaths(self, df, x_col):
         """Keep only dataframe rows with valid filenames
-        # Arguments
+        Args:
             df: Pandas dataframe containing filenames in a column
             x_col: string, column in `df` that contains the filenames or filepaths
-        # Returns
+       Returns:
             absolute paths to image files
         """
         filepaths = df[x_col].map(
@@ -716,7 +716,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
     resize the image to the specified target size.
 
     - random_crop_size:  Size of the random crop. Either a percentage of the original image (0,1) that will do square
-        crop or a fixed size (tuple) or integer where integer will set both dimensions as equal.
+        crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
         target_size: tuple of integers, dimensions to resize input images to.
 
     The functions `flow_from_dataframe` and `flow_from_directory` incorporate the following extra variables:
@@ -728,7 +728,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
                      classes are evenly distributed. We can have repetition of samples during the same epoch.
 
 
-    The `flow_from_directory` function accepts class_mode='probabilistic' to handle list of labels in a
+    The `flow_from_directory` function accepts class_mode='probabilistic' to handle a list of labels in a
     dataframe column.
 
     """
