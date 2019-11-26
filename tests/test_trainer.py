@@ -251,11 +251,11 @@ def test_custom_model_on_catdog_datasets_with_multi_loss(train_catdog_dataset_pa
 
 
 def test_custom_model_on_catdog_datasets_with_probabilistic_labels(train_catdog_dataset_path, val_catdog_dataset_path,
-                                                                   train_catdog_dataframe_path,
-                                                                   val_catdog_dataframe_path,
+                                                                   train_catdog_dataset_json_path,
+                                                                   val_catdog_dataset_json_path,
                                                                    simple_model):
-    train_dataframe = pd.read_json(train_catdog_dataframe_path)
-    val_dataframe = pd.read_json(val_catdog_dataframe_path)
+    train_dataframe = pd.read_json(train_catdog_dataset_json_path)
+    val_dataframe = pd.read_json(val_catdog_dataset_json_path)
     trainer_args = {
         'custom_model': simple_model,
         'train_generator': EnhancedImageDataGenerator().flow_from_dataframe(
@@ -288,9 +288,9 @@ def test_custom_model_on_catdog_datasets_with_probabilistic_labels(train_catdog_
 
 def test_custom_model_on_catdog_datasets_with_mix_directory_dataframe(train_catdog_dataset_path,
                                                                       val_catdog_dataset_path,
-                                                                      train_catdog_dataframe_path,
+                                                                      train_catdog_dataset_json_path,
                                                                       simple_model):
-    train_dataframe = pd.read_json(train_catdog_dataframe_path)
+    train_dataframe = pd.read_json(train_catdog_dataset_json_path)
     trainer_args = {
         'custom_model': simple_model,
         'train_generator': EnhancedImageDataGenerator().flow_from_dataframe(
@@ -316,13 +316,13 @@ def test_custom_model_on_catdog_datasets_with_mix_directory_dataframe(train_catd
 
 def test_custom_model_on_catdog_datasets_with_probabilistic_labels_from_constructor(train_catdog_dataset_path,
                                                                                     val_catdog_dataset_path,
-                                                                                    train_catdog_dataframe_path,
-                                                                                    val_catdog_dataframe_path,
+                                                                                    train_catdog_dataset_json_path,
+                                                                                    val_catdog_dataset_json_path,
                                                                                     simple_model):
     trainer_args = {
         'custom_model': simple_model,
-        'train_dataset_dataframe': train_catdog_dataframe_path,
-        'val_dataset_dataframe': val_catdog_dataframe_path,
+        'train_dataset_dataframe_path': train_catdog_dataset_json_path,
+        'val_dataset_dataframe_path': val_catdog_dataset_json_path,
         'model_spec': 'mobilenet_v1',
         'num_classes': 2,
     }
@@ -333,20 +333,6 @@ def test_custom_model_on_catdog_datasets_with_probabilistic_labels_from_construc
                            'preprocess_func': 'mean_subtraction',
                            'target_size': [224, 224, 3]
                            }
-    check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
-                                   trainer_args, expected_model_spec, check_opts=False)
-
-    train_dataframe = pd.read_json(train_catdog_dataframe_path)
-    val_dataframe = pd.read_json(val_catdog_dataframe_path)
-
-    trainer_args = {
-        'custom_model': simple_model,
-        'train_dataset_dataframe': train_dataframe,
-        'val_dataset_dataframe': val_dataframe,
-        'model_spec': 'mobilenet_v1',
-        'num_classes': 2,
-    }
-
     check_train_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path,
                                    trainer_args, expected_model_spec, check_opts=False)
 

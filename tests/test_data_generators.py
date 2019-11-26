@@ -9,8 +9,8 @@ from keras_trainer.data_generators import EnhancedDirectoryIterator, EnhancedIma
 # Here we provide tests for the functionalities added
 
 
-def test_enhanced_directory_iterator_mode_equiprobable(train_catdog_dataset_path, train_catdog_dataframe_path):
-    dataframe = pd.read_json(train_catdog_dataframe_path)
+def test_enhanced_directory_iterator_mode_equiprobable(train_catdog_dataset_path, train_catdog_dataset_json_path):
+    dataframe = pd.read_json(train_catdog_dataset_json_path)
     iterators = [EnhancedDirectoryIterator(train_catdog_dataset_path,
                                            EnhancedImageDataGenerator(),
                                            iterator_mode='equiprobable',
@@ -31,8 +31,8 @@ def test_enhanced_directory_iterator_mode_equiprobable(train_catdog_dataset_path
         assert y.shape == (2, 2)
 
 
-def test_enhanced_directory_iterator_same_n_outputs(train_catdog_dataset_path, train_catdog_dataframe_path):
-    dataframe = pd.read_json(train_catdog_dataframe_path)
+def test_enhanced_directory_iterator_same_n_outputs(train_catdog_dataset_path, train_catdog_dataset_json_path):
+    dataframe = pd.read_json(train_catdog_dataset_json_path)
     iterators = [EnhancedDirectoryIterator(train_catdog_dataset_path,
                                            EnhancedImageDataGenerator(),
                                            n_outputs=2,
@@ -54,8 +54,8 @@ def test_enhanced_directory_iterator_same_n_outputs(train_catdog_dataset_path, t
         np.testing.assert_array_equal(y[0], y[1])
 
 
-def test_enhanced_image_data_generator_random_crop(train_catdog_dataset_path, train_catdog_dataframe_path):
-    dataframe = pd.read_json(train_catdog_dataframe_path)
+def test_enhanced_image_data_generator_random_crop(train_catdog_dataset_path, train_catdog_dataset_json_path):
+    dataframe = pd.read_json(train_catdog_dataset_json_path)
     generator = EnhancedImageDataGenerator(random_crop_size=0.8)
     datagens = [generator.flow_from_directory(train_catdog_dataset_path,
                                               batch_size=1,
