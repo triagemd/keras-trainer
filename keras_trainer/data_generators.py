@@ -585,11 +585,11 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
         if self.class_mode == 'probabilistic':
             if not all(df[y_col].apply(lambda x: isinstance(x, list))):
                 raise TypeError('All values in column y_col={} must be list.'
-                                .format(x_col))
+                                .format(y_col))
             class_number = len(df[y_col].values[0])
             if not all(df[y_col].apply(lambda x: len(x) == class_number)):
                 raise TypeError('All lists in column y_col={} must have same length.'
-                                .format(x_col))
+                                .format(y_col))
 
         # check that y_col has several column names if class_mode is multi_output
         if (self.class_mode == 'multi_output') and not isinstance(y_col, list):
