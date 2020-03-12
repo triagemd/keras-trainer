@@ -144,7 +144,7 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
     @staticmethod
     def apply_custom_crop(image, crop_coordinates):
         """
-        The format of the image cropping coordinates should be [x, y, width, height] and PIL cropping format is
+        The format of the image `crop_coordinates` should be [x, y, width, height] and PIL cropping format is
         [left, upper, right, lower].
         """
         crop_x, crop_y, crop_w, crop_h = crop_coordinates
