@@ -25,6 +25,7 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
 
     def set_processing_attrs(self,
                              image_data_generator,
+                             custom_crop,
                              random_crop_size,
                              n_outputs,
                              target_size,
@@ -39,6 +40,8 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
         # Arguments
             image_data_generator: Instance of `ImageDataGenerator`
                 to use for random transformations and normalization.
+            custom_crop: If True, will crop images according to the dataframe's crop coordinates information contained in
+            `crop_col`. The custom crop will be performed before the `random_crop` if both are True.
             random_crop_size: Size of the random crop. Either a percentage of the original image (0,1) that will do square
                 crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
             target_size: tuple of integers, dimensions to resize input images to.
@@ -65,6 +68,7 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
         """
         self.image_data_generator = image_data_generator
         self.target_size = tuple(target_size)
+        self.custom_crop = custom_crop
         if color_mode not in {'rgb', 'rgba', 'grayscale'}:
             raise ValueError('Invalid color mode:', color_mode,
                              '; expected "rgb", "rgba", or "grayscale".')
@@ -138,6 +142,23 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
 
         return x, y, x + tw, y + th
 
+    @staticmethod
+    def apply_custom_crop(image, crop_coordinates):
+        """
+        The format of the image `crop_coordinates` should be [x, y, width, height] and PIL cropping format is
+        [left, upper, right, lower].
+        """
+        crop_x, crop_y, crop_w, crop_h = crop_coordinates
+
+        left = crop_x
+        upper = crop_y
+        right = crop_x + crop_w
+        lower = crop_y + crop_h
+
+        coordinates = [left, upper, right, lower]
+
+        return image.crop(coordinates)
+
     def _get_batches_of_transformed_samples(self, index_array):
         """Gets a batch of transformed samples.
         # Arguments
@@ -154,6 +175,9 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
                            color_mode=self.color_mode,
                            target_size=None,
                            interpolation=self.interpolation)
+            if self.custom_crop:
+                if isinstance(self.crops[j], list):
+                    img = self.apply_custom_crop(img, self.crops[j])
             if self.random_crop_size:
                 img = img.crop(self.random_crop_parameters(img,
                                                            crop_size=self.random_crop_size,
@@ -301,6 +325,7 @@ class EnhancedDirectoryIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
                  directory,
                  image_data_generator,
                  iterator_mode=None,
+                 custom_crops=False,
                  random_crop_size=None,
                  n_outputs=1,
                  target_size=(256, 256),
@@ -319,6 +344,7 @@ class EnhancedDirectoryIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
                  interpolation='nearest',
                  dtype='float32'):
         super(EnhancedDirectoryIterator, self).set_processing_attrs(image_data_generator,
+                                                                    custom_crops,
                                                                     random_crop_size,
                                                                     n_outputs,
                                                                     target_size,
@@ -431,6 +457,7 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
         x_col: string, column in `dataframe` that contains the filenames (or
             absolute paths if `directory` is `None`).
         y_col: string or list, column/s in `dataframe` that has the target data.
+        crop_col: list, (optional) column in `dataframe` that contains the custom crop coordinates.
         weight_col: string, column in `dataframe` that contains the sample
             weights. Default: `None`.
         target_size: tuple of integers, dimensions to resize input images to.
@@ -485,12 +512,14 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
     def __init__(self,
                  dataframe,
                  image_data_generator=None,
+                 custom_crop=False,
                  random_crop_size=None,
                  directory=None,
                  n_outputs=1,
                  iterator_mode=None,
                  x_col="filename",
                  y_col="class",
+                 crop_col="crop",
                  weight_col=None,
                  target_size=(256, 256),
                  color_mode='rgb',
@@ -509,6 +538,7 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
                  validate_filenames=True):
 
         super(EnhancedDataFrameIterator, self).set_processing_attrs(image_data_generator,
+                                                                    custom_crop,
                                                                     random_crop_size,
                                                                     n_outputs,
                                                                     target_size,
@@ -550,6 +580,8 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
         if class_mode not in ["input", "multi_output", "raw", "probabilistic", None]:
             self.classes = self.get_classes(df, y_col)
         self.filenames = df[x_col].tolist()
+        if custom_crop:
+            self.crops = df[crop_col].tolist()
         self._sample_weight = df[weight_col].values if weight_col else None
 
         if class_mode == "multi_output":
@@ -712,12 +744,14 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
     """
 
     This is a modification of the Keras class ImageDataGenerator that includes some extra functionalities.
-    The image data generator has a new option `random_crop_size` that if specified will perform random crops prior to
+    The image data generator has a new options `random_crop_size` and `custom_crop` that if specified will perform random crops prior to
     resize the image to the specified target size.
 
     - random_crop_size:  Size of the random crop. Either a percentage of the original image (0,1) that will do square
         crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
         target_size: tuple of integers, dimensions to resize input images to.
+    - custom_crop: A boolean, if True custom crops will be done according to the value in `crop_col`. This has been
+        implemented only for `flow_from_dataframe()`.
 
     The functions `flow_from_dataframe` and `flow_from_directory` incorporate the following extra variables:
 
@@ -734,6 +768,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
     """
 
     def __init__(self,
+                 custom_crop=False,
                  random_crop_size=None,
                  featurewise_center=False,
                  samplewise_center=False,
@@ -757,7 +792,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
                  data_format='channels_last',
                  validation_split=0.0,
                  ):
-
+        self.custom_crop = custom_crop
         self.random_crop_size = random_crop_size
 
         super(EnhancedImageDataGenerator, self).__init__(
@@ -790,6 +825,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
                             iterator_mode=None,
                             x_col="filename",
                             y_col="class",
+                            crop_col="crop",
                             weight_col=None,
                             target_size=(256, 256),
                             color_mode='rgb',
@@ -811,12 +847,14 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
         return EnhancedDataFrameIterator(
             dataframe,
             iterator_mode=iterator_mode,
+            custom_crop=self.custom_crop,
             random_crop_size=self.random_crop_size,
             n_outputs=n_outputs,
             directory=directory,
             image_data_generator=self,
             x_col=x_col,
             y_col=y_col,
+            crop_col=crop_col,
             weight_col=weight_col,
             target_size=target_size,
             color_mode=color_mode,

@@ -2,17 +2,20 @@
   {
     "filename": "cat/cat-1.jpg",
     "class_probabilities": [0.9, 0.1],
-    "class_name": "cat"
+    "class_name": "cat",
+    "crop": [100, 100, 50, 75]
   },
   {
     "filename": "cat/cat-2.jpg",
     "class_probabilities": [1.0, 0.0],
-    "class_name": "cat"
+    "class_name": "cat",
+    "crop": [120, 110, 200, 160]
   },
   {
     "filename": "cat/cat-3.jpg",
     "class_probabilities": [0.7, 0.3],
-    "class_name": "cat"
+    "class_name": "cat",
+    "crop": null
   },
   {
     "filename": "dog/dog-1.jpg",
@@ -22,11 +25,13 @@
   {
     "filename": "dog/dog-2.jpg",
     "class_probabilities": [0.2, 0.8],
-    "class_name": "dog"
+    "class_name": "dog",
+    "crop": null
   },
   {
     "filename": "dog/dog-3.jpg",
     "class_probabilities": [0.1, 0.9],
-    "class_name": "dog"
+    "class_name": "dog",
+    "crop": null
   }
 ]
