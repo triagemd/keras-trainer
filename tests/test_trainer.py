@@ -263,6 +263,7 @@ def test_custom_model_on_catdog_datasets_with_probabilistic_labels(train_catdog_
             directory=train_catdog_dataset_path,
             x_col="filename",
             y_col="class_probabilities",
+            z_col="crop",
             target_size=(224, 224)
         ),
         'model_spec': 'mobilenet_v1',
@@ -272,6 +273,7 @@ def test_custom_model_on_catdog_datasets_with_probabilistic_labels(train_catdog_
             directory=val_catdog_dataset_path,
             x_col="filename",
             y_col="class_probabilities",
+            z_col="crop",
             target_size=(224, 224)
         ),
     }
