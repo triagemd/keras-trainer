@@ -456,7 +456,7 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
         x_col: string, column in `dataframe` that contains the filenames (or
             absolute paths if `directory` is `None`).
         y_col: string or list, column/s in `dataframe` that has the target data.
-        z_col: list or  none, column in `dataframe` that has the custom crop coordinates.
+        z_col: list, (optional) column in `dataframe` that contains the custom crop coordinates.
         weight_col: string, column in `dataframe` that contains the sample
             weights. Default: `None`.
         target_size: tuple of integers, dimensions to resize input images to.
