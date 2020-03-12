@@ -22,10 +22,10 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
     It includes the logic to transform image files to batches.
     Addition of a method to random crop images.
     """
-
     def set_processing_attrs(self,
                              image_data_generator,
                              random_crop_size,
+                             custom_crop,
                              n_outputs,
                              target_size,
                              color_mode,
@@ -65,6 +65,7 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
         """
         self.image_data_generator = image_data_generator
         self.target_size = tuple(target_size)
+        self.custom_crop = custom_crop
         if color_mode not in {'rgb', 'rgba', 'grayscale'}:
             raise ValueError('Invalid color mode:', color_mode,
                              '; expected "rgb", "rgba", or "grayscale".')
@@ -138,6 +139,23 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
 
         return x, y, x + tw, y + th
 
+    @staticmethod
+    def apply_custom_crop(image, crop_coordinates):
+        """
+        The format of the image cropping coordinates should be [x, y, width, height] and PIL cropping format is
+        [left, upper, right, lower].
+        """
+        crop_x, crop_y, crop_w, crop_h = crop_coordinates
+
+        left = crop_x
+        upper = crop_y
+        right = crop_x + crop_w
+        lower = crop_y + crop_h
+
+        coordinates = [left, upper, right, lower]
+
+        return image.crop(coordinates)
+
     def _get_batches_of_transformed_samples(self, index_array):
         """Gets a batch of transformed samples.
         # Arguments
@@ -154,6 +172,9 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
                            color_mode=self.color_mode,
                            target_size=None,
                            interpolation=self.interpolation)
+            if self.custom_crop:
+                if isinstance(self.crops[j], list):
+                    img = self.apply_custom_crop(img, self.crops[j])
             if self.random_crop_size:
                 img = img.crop(self.random_crop_parameters(img,
                                                            crop_size=self.random_crop_size,
@@ -486,11 +507,13 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
                  dataframe,
                  image_data_generator=None,
                  random_crop_size=None,
+                 custom_crop=True,
                  directory=None,
                  n_outputs=1,
                  iterator_mode=None,
                  x_col="filename",
                  y_col="class",
+                 z_col="crop",
                  weight_col=None,
                  target_size=(256, 256),
                  color_mode='rgb',
@@ -510,6 +533,7 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
 
         super(EnhancedDataFrameIterator, self).set_processing_attrs(image_data_generator,
                                                                     random_crop_size,
+                                                                    custom_crop,
                                                                     n_outputs,
                                                                     target_size,
                                                                     color_mode,
@@ -550,6 +574,7 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
         if class_mode not in ["input", "multi_output", "raw", "probabilistic", None]:
             self.classes = self.get_classes(df, y_col)
         self.filenames = df[x_col].tolist()
+        self.crops = df[z_col].tolist()
         self._sample_weight = df[weight_col].values if weight_col else None
 
         if class_mode == "multi_output":
@@ -740,6 +765,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
                  featurewise_std_normalization=False,
                  samplewise_std_normalization=False,
                  zca_whitening=False,
+                 custom_crop=False,
                  zca_epsilon=1e-6,
                  rotation_range=0.,
                  width_shift_range=0.,
@@ -759,6 +785,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
                  ):
 
         self.random_crop_size = random_crop_size
+        self.custom_crop = custom_crop
 
         super(EnhancedImageDataGenerator, self).__init__(
             featurewise_center=featurewise_center,
@@ -790,6 +817,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
                             iterator_mode=None,
                             x_col="filename",
                             y_col="class",
+                            z_col="crop",
                             weight_col=None,
                             target_size=(256, 256),
                             color_mode='rgb',
@@ -812,11 +840,13 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
             dataframe,
             iterator_mode=iterator_mode,
             random_crop_size=self.random_crop_size,
+            custom_crop = self.custom_crop,
             n_outputs=n_outputs,
             directory=directory,
             image_data_generator=self,
             x_col=x_col,
             y_col=y_col,
+            z_col=z_col,
             weight_col=weight_col,
             target_size=target_size,
             color_mode=color_mode,
