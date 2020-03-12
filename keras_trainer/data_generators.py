@@ -41,7 +41,7 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
             image_data_generator: Instance of `ImageDataGenerator`
                 to use for random transformations and normalization.
             custom_crop: If True, will crop images according to the dataframe's crop coordinates information contained in
-            `crop_column`. The custom crop will be performed before the `random_crop` if both are True.
+            `crop_col`. The custom crop will be performed before the `random_crop` if both are True.
             random_crop_size: Size of the random crop. Either a percentage of the original image (0,1) that will do square
                 crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
             target_size: tuple of integers, dimensions to resize input images to.
@@ -457,7 +457,7 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
         x_col: string, column in `dataframe` that contains the filenames (or
             absolute paths if `directory` is `None`).
         y_col: string or list, column/s in `dataframe` that has the target data.
-        crop_column: list, (optional) column in `dataframe` that contains the custom crop coordinates.
+        crop_col: list, (optional) column in `dataframe` that contains the custom crop coordinates.
         weight_col: string, column in `dataframe` that contains the sample
             weights. Default: `None`.
         target_size: tuple of integers, dimensions to resize input images to.
@@ -519,7 +519,7 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
                  iterator_mode=None,
                  x_col="filename",
                  y_col="class",
-                 crop_column="crop",
+                 crop_col="crop",
                  weight_col=None,
                  target_size=(256, 256),
                  color_mode='rgb',
@@ -581,7 +581,7 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
             self.classes = self.get_classes(df, y_col)
         self.filenames = df[x_col].tolist()
         if custom_crop:
-            self.crops = df[crop_column].tolist()
+            self.crops = df[crop_col].tolist()
         self._sample_weight = df[weight_col].values if weight_col else None
 
         if class_mode == "multi_output":
@@ -750,7 +750,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
     - random_crop_size:  Size of the random crop. Either a percentage of the original image (0,1) that will do square
         crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
         target_size: tuple of integers, dimensions to resize input images to.
-    - custom_crop: A boolean, if True custom crops will be done according to the value in `crop_column`. This has been
+    - custom_crop: A boolean, if True custom crops will be done according to the value in `crop_col`. This has been
         implemented only for `flow_from_dataframe()`.
 
     The functions `flow_from_dataframe` and `flow_from_directory` incorporate the following extra variables:
@@ -825,7 +825,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
                             iterator_mode=None,
                             x_col="filename",
                             y_col="class",
-                            crop_column="crop",
+                            crop_col="crop",
                             weight_col=None,
                             target_size=(256, 256),
                             color_mode='rgb',
@@ -854,7 +854,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
             image_data_generator=self,
             x_col=x_col,
             y_col=y_col,
-            crop_column=crop_column,
+            crop_col=crop_col,
             weight_col=weight_col,
             target_size=target_size,
             color_mode=color_mode,

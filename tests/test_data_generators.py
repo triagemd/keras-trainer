@@ -98,7 +98,7 @@ def test_custom_crop(train_catdog_dataset_path, train_catdog_dataset_json_path, 
                                             directory=train_catdog_dataset_path,
                                             x_col="filename",
                                             y_col="class_probabilities",
-                                            crop_column="crop",
+                                            crop_col="crop",
                                             batch_size=1,
                                             target_size=(256, 256))
     x, y = datagen.next()
