@@ -22,6 +22,7 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
     It includes the logic to transform image files to batches.
     Addition of a method to random crop images.
     """
+
     def set_processing_attrs(self,
                              image_data_generator,
                              random_crop_size,
@@ -41,6 +42,7 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
                 to use for random transformations and normalization.
             random_crop_size: Size of the random crop. Either a percentage of the original image (0,1) that will do square
                 crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
+            custom_crop: If True, will crop images according to the manifest file.
             target_size: tuple of integers, dimensions to resize input images to.
             target_size: tuple of integers, dimensions to resize input images to.
             color_mode: One of `"rgb"`, `"rgba"`, `"grayscale"`.
@@ -452,6 +454,7 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
         x_col: string, column in `dataframe` that contains the filenames (or
             absolute paths if `directory` is `None`).
         y_col: string or list, column/s in `dataframe` that has the target data.
+        z_col: list or  none, column in `dataframe` that has the custom crop coordinates.
         weight_col: string, column in `dataframe` that contains the sample
             weights. Default: `None`.
         target_size: tuple of integers, dimensions to resize input images to.
@@ -737,12 +740,14 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
     """
 
     This is a modification of the Keras class ImageDataGenerator that includes some extra functionalities.
-    The image data generator has a new option `random_crop_size` that if specified will perform random crops prior to
+    The image data generator has a new options `random_crop_size` and `custom_crop` that if specified will perform random crops prior to
     resize the image to the specified target size.
 
     - random_crop_size:  Size of the random crop. Either a percentage of the original image (0,1) that will do square
         crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
         target_size: tuple of integers, dimensions to resize input images to.
+    - custom_crop: A boolean, if True custom crops will be done according to the value in 'z_col'. This has been
+        implemented only for  `flow_from_dataframe`.
 
     The functions `flow_from_dataframe` and `flow_from_directory` incorporate the following extra variables:
 
@@ -840,7 +845,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
             dataframe,
             iterator_mode=iterator_mode,
             random_crop_size=self.random_crop_size,
-            custom_crop = self.custom_crop,
+            custom_crop=self.custom_crop,
             n_outputs=n_outputs,
             directory=directory,
             image_data_generator=self,
