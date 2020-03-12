@@ -749,7 +749,7 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
         crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
         target_size: tuple of integers, dimensions to resize input images to.
     - custom_crop: A boolean, if True custom crops will be done according to the value in `z_col`. This has been
-        implemented only for  `flow_from_dataframe`.
+        implemented only for `flow_from_dataframe()`.
 
     The functions `flow_from_dataframe` and `flow_from_directory` incorporate the following extra variables:
 
