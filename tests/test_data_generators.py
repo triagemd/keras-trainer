@@ -91,7 +91,7 @@ def test_enhanced_image_data_generator_random_crop(train_catdog_dataset_path, tr
         assert dy - y == 200
 
 
-def test_custom_crop(train_catdog_dataset_path, train_catdog_dataset_json_path):
+def test_custom_crop(train_catdog_dataset_path, train_catdog_dataset_json_path, train_single_cat_image_path):
     dataframe = pd.read_json(train_catdog_dataset_json_path)
     generator = EnhancedImageDataGenerator(custom_crop=True)
     datagen = generator.flow_from_dataframe(dataframe,
@@ -104,7 +104,7 @@ def test_custom_crop(train_catdog_dataset_path, train_catdog_dataset_json_path):
     x, y = datagen.next()
     assert x.shape == (1, 256, 256, 3)
     assert len(y) == 1
-    img = Image.open('tests/files/catdog/train/cat/cat-1.jpg')
+    img = Image.open(train_single_cat_image_path)
 
     img_cropped = datagen.apply_custom_crop(img, crop_coordinates=[100, 100, 50, 75])
     assert img_cropped.size == (50, 75)

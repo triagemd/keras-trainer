@@ -25,8 +25,8 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
 
     def set_processing_attrs(self,
                              image_data_generator,
-                             random_crop_size,
                              custom_crop,
+                             random_crop_size,
                              n_outputs,
                              target_size,
                              color_mode,
@@ -40,9 +40,10 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
         # Arguments
             image_data_generator: Instance of `ImageDataGenerator`
                 to use for random transformations and normalization.
+            custom_crop: If True, will crop images according to the dataframe's crop coordinates information contained in
+            `z_col`. The custom crop will be performed before the `random_crop` if both are True.
             random_crop_size: Size of the random crop. Either a percentage of the original image (0,1) that will do square
                 crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
-            custom_crop: If True, will crop images according to the dataframe's crop coordinates information contained in `z_col`.
             target_size: tuple of integers, dimensions to resize input images to.
             target_size: tuple of integers, dimensions to resize input images to.
             color_mode: One of `"rgb"`, `"rgba"`, `"grayscale"`.
@@ -324,8 +325,8 @@ class EnhancedDirectoryIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
                  directory,
                  image_data_generator,
                  iterator_mode=None,
-                 random_crop_size=None,
                  custom_crops=False,
+                 random_crop_size=None,
                  n_outputs=1,
                  target_size=(256, 256),
                  color_mode='rgb',
@@ -511,8 +512,8 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
     def __init__(self,
                  dataframe,
                  image_data_generator=None,
+                 custom_crop=False,
                  random_crop_size=None,
-                 custom_crop=True,
                  directory=None,
                  n_outputs=1,
                  iterator_mode=None,
@@ -537,8 +538,8 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
                  validate_filenames=True):
 
         super(EnhancedDataFrameIterator, self).set_processing_attrs(image_data_generator,
-                                                                    random_crop_size,
                                                                     custom_crop,
+                                                                    random_crop_size,
                                                                     n_outputs,
                                                                     target_size,
                                                                     color_mode,
@@ -579,7 +580,8 @@ class EnhancedDataFrameIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
         if class_mode not in ["input", "multi_output", "raw", "probabilistic", None]:
             self.classes = self.get_classes(df, y_col)
         self.filenames = df[x_col].tolist()
-        self.crops = df[z_col].tolist()
+        if custom_crop:
+            self.crops = df[z_col].tolist()
         self._sample_weight = df[weight_col].values if weight_col else None
 
         if class_mode == "multi_output":
@@ -766,13 +768,13 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
     """
 
     def __init__(self,
+                 custom_crop=False,
                  random_crop_size=None,
                  featurewise_center=False,
                  samplewise_center=False,
                  featurewise_std_normalization=False,
                  samplewise_std_normalization=False,
                  zca_whitening=False,
-                 custom_crop=False,
                  zca_epsilon=1e-6,
                  rotation_range=0.,
                  width_shift_range=0.,
@@ -790,9 +792,8 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
                  data_format='channels_last',
                  validation_split=0.0,
                  ):
-
-        self.random_crop_size = random_crop_size
         self.custom_crop = custom_crop
+        self.random_crop_size = random_crop_size
 
         super(EnhancedImageDataGenerator, self).__init__(
             featurewise_center=featurewise_center,
@@ -846,8 +847,8 @@ class EnhancedImageDataGenerator(ImageDataGenerator):
         return EnhancedDataFrameIterator(
             dataframe,
             iterator_mode=iterator_mode,
-            random_crop_size=self.random_crop_size,
             custom_crop=self.custom_crop,
+            random_crop_size=self.random_crop_size,
             n_outputs=n_outputs,
             directory=directory,
             image_data_generator=self,
