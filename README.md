@@ -4,7 +4,7 @@
 
 An abstraction to train Keras CNN models for image classification. 
 
-This package provides an easy framework to apply extra training steps as **image preprocessing**, **random cropping**, **balanced sampling**, training with **probabilistic labels** and using **multi-loss functions**.
+This package provides an easy framework to apply extra training steps such as **image preprocessing**, **random cropping**, **balanced sampling**, training with **probabilistic labels** and using **multi-loss functions**.
 
 
 
