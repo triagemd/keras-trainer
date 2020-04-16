@@ -16,7 +16,7 @@ setup(
         'h5py',
         'pandas',
         'Pillow',
-        'keras-model-specs==1.2.0',
+        'keras-model-specs==2.1.0',
         'sklearn'
     ]
 )
