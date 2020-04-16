@@ -39,7 +39,7 @@ Xception
 
 NasNet
 
-- `nasnet_large`, `nasnet_mobile`, 
+- `nasnet_large`, `nasnet_mobile`
 
 DenseNet
 
