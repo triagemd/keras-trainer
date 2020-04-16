@@ -422,7 +422,7 @@ def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override(train_catdog_d
         preprocess_func='mean_subtraction',
         preprocess_args=[1, 2, 3]
     )}
-    expected_model_spec = {'model': 'keras.applications.mobilenet.MobileNet',
+    expected_model_spec = {'model': 'keras_applications.mobilenet.MobileNet',
                            'name': 'mobilenet_v1',
                            'preprocess_args': [1, 2, 3],
                            'preprocess_func': 'mean_subtraction',
