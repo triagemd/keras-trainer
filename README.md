@@ -4,11 +4,11 @@
 
 An abstraction to train Keras CNN models for image classification. 
 
-This package provides an easy framework to apply extra training steps as **image preprocessing**, **random cropping**, **balanced sampling**, training with **probabilistic labels** and using **multi-loss functions**.
+This package provides an easy framework to apply extra training steps such as **image preprocessing**, **random cropping**, **balanced sampling**, training with **probabilistic labels** and using **multi-loss functions**.
 
 
 
-The models supported are the ones specified [keras-model-specs](https://github.com/triagemd/keras-model-specs) package 
+The models supported are the ones specified in the [keras-model-specs](https://github.com/triagemd/keras-model-specs) package 
 that correspond to the latest models available in [keras-applications](https://github.com/keras-team/keras-applications)
 
 These are:
@@ -27,7 +27,7 @@ ResNeXt
 
 MobileNet
 
-- `mobilenet_v1`, `mobilenet_v2`
+- `mobilenet_v1`, `mobilenet_v2`, `mobilenet_v3_small`, `mobilenet_v3_large`
 
 Inception
 
@@ -39,13 +39,14 @@ Xception
 
 NasNet
 
-- `nasnet_large`, `nasnet_mobile`, 
+- `nasnet_large`, `nasnet_mobile`
 
 DenseNet
 
 - `densenet_169`, `densenet_121`, `densenet_201`
 
 EfficientNet
+
 - `efficientnetb0`, `efficientnetb1`, `efficientnetb2`, 
 `efficientnetb3`, `efficientnetb4`, `efficientnetb5`, `efficientnetb6`, `efficientnetb7`
 
