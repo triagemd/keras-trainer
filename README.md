@@ -27,7 +27,7 @@ ResNeXt
 
 MobileNet
 
-- `mobilenet_v1`, `mobilenet_v2`
+- `mobilenet_v1`, `mobilenet_v2`, `mobilenet_v3_small`, `mobilenet_v3_large`
 
 Inception
 
@@ -46,6 +46,7 @@ DenseNet
 - `densenet_169`, `densenet_121`, `densenet_201`
 
 EfficientNet
+
 - `efficientnetb0`, `efficientnetb1`, `efficientnetb2`, 
 `efficientnetb3`, `efficientnetb4`, `efficientnetb5`, `efficientnetb6`, `efficientnetb7`
 
