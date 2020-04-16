@@ -8,7 +8,7 @@ This package provides an easy framework to apply extra training steps such as **
 
 
 
-The models supported are the ones specified [keras-model-specs](https://github.com/triagemd/keras-model-specs) package 
+The models supported are the ones specified in the [keras-model-specs](https://github.com/triagemd/keras-model-specs) package 
 that correspond to the latest models available in [keras-applications](https://github.com/keras-team/keras-applications)
 
 These are:
