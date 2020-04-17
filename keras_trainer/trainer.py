@@ -203,15 +203,16 @@ class Trainer(object):
         if self.checkpoint_path is not None:
             self.model = load_model(self.checkpoint_path)
         # Load a custom model (not supported by keras-model-specs)
-        elif self.custom_model is not None and self.model_spec.klass is None:
+        elif self.custom_model is not None and self.model_spec.model is None:
             self.model = self.custom_model
         # Load a model supported by keras-model-specs
         else:
-            self.model = self.model_spec.klass(
+            self.model = self.model_spec.model(
                 input_shape=self.input_shape or self.model_spec.target_size,
                 weights=self.weights,
                 include_top=self.include_top,
-                pooling=self.pooling
+                pooling=self.pooling,
+                **self.model_spec.keras_kwargs
             )
             # If top layers are given include them, else include a Dense Layer with Softmax/Sigmoid
             if self.top_layers is None:

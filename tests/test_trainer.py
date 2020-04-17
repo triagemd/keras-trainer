@@ -179,7 +179,7 @@ def test_custom_model_on_catdog_datasets(train_catdog_dataset_path, val_catdog_d
                                                 preprocess_func='mean_subtraction',
                                                 target_size=[224, 224, 3])
                     }
-    expected_model_spec = {'klass': None,
+    expected_model_spec = {'model': None,
                            'name': 'custom',
                            'preprocess_args': [1, 2, 3],
                            'preprocess_func': 'mean_subtraction',
@@ -198,7 +198,7 @@ def test_custom_model_track_sensitivity_on_catdog_datasets(train_catdog_dataset_
                                                 target_size=[224, 224, 3]),
                     'track_sensitivity': True
                     }
-    expected_model_spec = {'klass': None,
+    expected_model_spec = {'model': None,
                            'name': 'custom',
                            'preprocess_args': [1, 2, 3],
                            'preprocess_func': 'mean_subtraction',
@@ -240,7 +240,7 @@ def test_custom_model_on_catdog_datasets_with_multi_loss(train_catdog_dataset_pa
                                                 preprocess_func='mean_subtraction',
                                                 target_size=[224, 224, 3])
                     }
-    expected_model_spec = {'klass': None,
+    expected_model_spec = {'model': None,
                            'name': 'model_custom_2_outputs',
                            'preprocess_args': [1, 2, 3],
                            'preprocess_func': 'mean_subtraction',
@@ -278,7 +278,7 @@ def test_custom_model_on_catdog_datasets_with_probabilistic_labels(train_catdog_
         ),
     }
 
-    expected_model_spec = {'klass': None,
+    expected_model_spec = {'model': None,
                            'name': 'model_custom_2_outputs',
                            'preprocess_args': [1, 2, 3],
                            'preprocess_func': 'mean_subtraction',
@@ -306,7 +306,7 @@ def test_custom_model_on_catdog_datasets_with_mix_directory_dataframe(train_catd
         'num_classes': 2,
     }
 
-    expected_model_spec = {'klass': None,
+    expected_model_spec = {'model': None,
                            'name': 'model_custom_2_outputs',
                            'preprocess_args': [1, 2, 3],
                            'preprocess_func': 'mean_subtraction',
@@ -329,7 +329,7 @@ def test_custom_model_on_catdog_datasets_with_probabilistic_labels_from_construc
         'num_classes': 2,
     }
 
-    expected_model_spec = {'klass': None,
+    expected_model_spec = {'model': None,
                            'name': 'model_custom_2_outputs',
                            'preprocess_args': [1, 2, 3],
                            'preprocess_func': 'mean_subtraction',
@@ -349,7 +349,7 @@ def test_mobilenet_v1_on_catdog_datasets_with_balanced_generator(train_catdog_da
         'model_spec': 'mobilenet_v1',
         'num_classes': 2
     }
-    expected_model_spec = {'klass': 'keras.applications.mobilenet.MobileNet',
+    expected_model_spec = {'model': 'keras_applications.mobilenet.MobileNet',
                            'name': 'mobilenet_v1',
                            'preprocess_args': None,
                            'preprocess_func': 'between_plus_minus_1',
@@ -377,7 +377,7 @@ def test_mobilenet_v1_on_catdog_datasets_with_dropout(train_catdog_dataset_path,
     trainer_args = {'dropout_rate': 0.5,
                     'model_spec': 'mobilenet_v1'
                     }
-    expected_model_spec = {'klass': 'keras.applications.mobilenet.MobileNet',
+    expected_model_spec = {'model': 'keras_applications.mobilenet.MobileNet',
                            'name': 'mobilenet_v1',
                            'preprocess_args': None,
                            'preprocess_func': 'between_plus_minus_1',
@@ -391,7 +391,7 @@ def test_mobilenet_v1_on_catdog_datasets_with_l2_regularization(train_catdog_dat
     trainer_args = {'regularization_function': l2(0.00025),
                     'model_spec': 'mobilenet_v1'
                     }
-    expected_model_spec = {'klass': 'keras.applications.mobilenet.MobileNet',
+    expected_model_spec = {'model': 'keras_applications.mobilenet.MobileNet',
                            'name': 'mobilenet_v1',
                            'preprocess_args': None,
                            'preprocess_func': 'between_plus_minus_1',
@@ -404,7 +404,7 @@ def test_mobilenet_v1_on_catdog_datasets_with_l2_regularization(train_catdog_dat
 def test_mobilenet_v1_on_catdog_datasets(train_catdog_dataset_path, val_catdog_dataset_path):
     trainer_args = {'model_spec': 'mobilenet_v1'}
     expected_model_spec = {
-        'klass': 'keras.applications.mobilenet.MobileNet',
+        'model': 'keras_applications.mobilenet.MobileNet',
         'name': 'mobilenet_v1',
         'preprocess_args': None,
         'preprocess_func': 'between_plus_minus_1',
@@ -417,12 +417,12 @@ def test_mobilenet_v1_on_catdog_datasets(train_catdog_dataset_path, val_catdog_d
 def test_mobilenet_v1_on_catdog_datasets_with_model_spec_override(train_catdog_dataset_path, val_catdog_dataset_path):
     trainer_args = {'model_spec': ModelSpec.get(
         'mobilenet_v1',
-        klass='keras.applications.mobilenet.MobileNet',
+        model='keras_applications.mobilenet.MobileNet',
         target_size=[112, 112, 3],
         preprocess_func='mean_subtraction',
         preprocess_args=[1, 2, 3]
     )}
-    expected_model_spec = {'klass': 'keras.applications.mobilenet.MobileNet',
+    expected_model_spec = {'model': 'keras_applications.mobilenet.MobileNet',
                            'name': 'mobilenet_v1',
                            'preprocess_args': [1, 2, 3],
                            'preprocess_func': 'mean_subtraction',

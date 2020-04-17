@@ -2,19 +2,56 @@
 
 ## Keras Trainer
 
-An abstraction to train Keras + Tensorflow CNN models for image classification. 
+An abstraction to train Keras CNN models for image classification. 
 
-This package provides an easy framework to apply extra training steps as **image preprocessing**, **random cropping**, **balanced sampling**, training with **probabilistic labels** and using **multi-loss functions**.
+This package provides an easy framework to apply extra training steps such as **image preprocessing**, **random cropping**, **balanced sampling**, training with **probabilistic labels** and using **multi-loss functions**.
 
-To use it is required to have also installed the `keras-model-specs` package.
 
-The models supported are the following:
 
-`vgg16`, `vgg19`, `resnet50`, `resnet152`, `mobilenet_v1`, `mobilenet_v2`,`xception`,
-`inception_resnet_v2`, `inception_v3`, `nasnet_large`, `nasnet_mobile`, `densenet_169`,
-`densenet_121`, `densenet_201`.
+The models supported are the ones specified in the [keras-model-specs](https://github.com/triagemd/keras-model-specs) package 
+that correspond to the latest models available in [keras-applications](https://github.com/keras-team/keras-applications)
 
-And the defaults are specified [here](https://github.com/triagemd/keras-model-specs/blob/master/keras_model_specs/model_specs.json).
+These are:
+
+VGG:
+
+- `vgg16`, `vgg19`
+
+ResNet 
+
+- `resnet50`, `resnet101` `resnet152`, `resnet50_v2`, `resnet101_v2`, `resnet152_v2`
+
+ResNeXt
+
+- `ResNeXt50`, `ResNeXt101`
+
+MobileNet
+
+- `mobilenet_v1`, `mobilenet_v2`, `mobilenet_v3_small`, `mobilenet_v3_large`
+
+Inception
+
+- `inception_resnet_v2`, `inception_v3`
+
+Xception
+
+- `xception`
+
+NasNet
+
+- `nasnet_large`, `nasnet_mobile`
+
+DenseNet
+
+- `densenet_169`, `densenet_121`, `densenet_201`
+
+EfficientNet
+
+- `efficientnetb0`, `efficientnetb1`, `efficientnetb2`, 
+`efficientnetb3`, `efficientnetb4`, `efficientnetb5`, `efficientnetb6`, `efficientnetb7`
+
+
+And the default model configurations are specified [here](https://github.com/triagemd/keras-model-specs/blob/master/keras_model_specs/model_specs.json).
 
 ### Keras Trainer definition
 
