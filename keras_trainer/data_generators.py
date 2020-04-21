@@ -4,6 +4,8 @@ import numpy as np
 import numpy.random as random
 import multiprocessing.pool
 
+
+from PIL import Image
 from keras_preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 from keras_preprocessing.image.iterator import BatchFromFilesMixin, Iterator
 from keras_preprocessing.image.utils import validate_filename, _list_valid_filenames_in_directory
@@ -12,6 +14,21 @@ from keras_preprocessing import get_keras_submodule
 
 backend = get_keras_submodule('backend')
 
+
+if Image is not None:
+    _PIL_INTERPOLATION_METHODS = {
+        'nearest': Image.NEAREST,
+        'bilinear': Image.BILINEAR,
+        'bicubic': Image.BICUBIC,
+    }
+    # These methods were only introduced in version 3.4.0 (2016).
+    if hasattr(Image, 'HAMMING'):
+        _PIL_INTERPOLATION_METHODS['hamming'] = Image.HAMMING
+    if hasattr(Image, 'BOX'):
+        _PIL_INTERPOLATION_METHODS['box'] = Image.BOX
+    # This method is new in version 1.1.3 (2013).
+    if hasattr(Image, 'LANCZOS'):
+        _PIL_INTERPOLATION_METHODS['lanczos'] = Image.LANCZOS
 
 # These functions are modifications on the original Keras functions, for the original documentation of the classes
 # we refer the user to https://github.com/keras-team/keras-preprocessing/tree/master/keras_preprocessing/image
@@ -44,7 +61,6 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
             `crop_col`. The custom crop will be performed before the `random_crop` if both are True.
             random_crop_size: Size of the random crop. Either a percentage of the original image (0,1) that will do square
                 crop, a fixed size (tuple), or integer where the value will set equally to both dimensions.
-            target_size: tuple of integers, dimensions to resize input images to.
             target_size: tuple of integers, dimensions to resize input images to.
             color_mode: One of `"rgb"`, `"rgba"`, `"grayscale"`.
                 Color mode to read images.
@@ -182,7 +198,14 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
                 img = img.crop(self.random_crop_parameters(img,
                                                            crop_size=self.random_crop_size,
                                                            crop_mode=self.crop_mode))
-            img = img.resize(self.target_size)
+            if self.interpolation not in _PIL_INTERPOLATION_METHODS:
+                raise ValueError(
+                    'Invalid interpolation method {} specified. Supported '
+                    'methods are {}'.format(
+                        self.interpolation,
+                        ", ".join(_PIL_INTERPOLATION_METHODS.keys())))
+            resample = _PIL_INTERPOLATION_METHODS[self.interpolation]
+            img = img.resize(self.target_size, interpolation=resample)
             x = img_to_array(img, data_format=self.data_format)
             # Pillow images should be closed after `load_img`,
             # but not PIL images.
