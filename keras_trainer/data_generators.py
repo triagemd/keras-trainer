@@ -205,7 +205,7 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
                         self.interpolation,
                         ", ".join(_PIL_INTERPOLATION_METHODS.keys())))
             resample = _PIL_INTERPOLATION_METHODS[self.interpolation]
-            img = img.resize(self.target_size, interpolation=resample)
+            img = img.resize(self.target_size, resample=resample)
             x = img_to_array(img, data_format=self.data_format)
             # Pillow images should be closed after `load_img`,
             # but not PIL images.
