@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 import pandas as pd
 
@@ -114,3 +115,21 @@ def test_custom_crop(train_catdog_dataset_path, train_catdog_dataset_json_path, 
 
     img_cropped = datagen.apply_custom_crop(img, crop_coordinates=[100, 100, 100, 120])
     assert img_cropped.size == (100, 120)
+
+
+def test_custom_crop_fail(val_catdog_dataset_path, val_catdog_dataset_json_path):
+    dataframe = pd.read_json(val_catdog_dataset_json_path)
+    generator = EnhancedImageDataGenerator(custom_crop=True)
+    datagen = generator.flow_from_dataframe(dataframe,
+                                            directory=val_catdog_dataset_path,
+                                            x_col="filename",
+                                            y_col="class_probabilities",
+                                            crop_col="crop",
+                                            batch_size=1,
+                                            target_size=(256, 256))
+    with pytest.raises(TypeError):
+        x = datagen.next()[0]
+        assert x.shape == (1, 256, 256, 3)
+
+        x = datagen.next()[0]
+        assert x.shape == (1, 256, 256, 3)
