@@ -1,4 +1,5 @@
 import os
+import math
 import warnings
 import numpy as np
 import numpy.random as random
@@ -194,6 +195,11 @@ class EnhancedBatchFromFilesMixin(BatchFromFilesMixin):
             if self.custom_crop:
                 if isinstance(self.crops[j], list):
                     img = self.apply_custom_crop(img, self.crops[j])
+                elif self.crops[j] is None:
+                    pass
+                elif math.isnan(
+                        self.crops[j]):  # for nan values and throws an error if the input is not float e.g. string
+                    pass
             if self.random_crop_size:
                 img = img.crop(self.random_crop_parameters(img,
                                                            crop_size=self.random_crop_size,
