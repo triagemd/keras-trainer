@@ -128,7 +128,6 @@ class Trainer(object):
                     iterator_mode=self.iterator_mode,
                     n_outputs=self.n_outputs,
                     batch_size=self.batch_size,
-                    custom_crop=self.custom_crop,
                     target_size=self.model_spec.target_size[:2],
                     class_mode='categorical'
                 )
@@ -165,7 +164,7 @@ class Trainer(object):
         print('Validation data')  # To complement Keras message
 
         self.val_data_generator = self.val_data_generator or EnhancedImageDataGenerator(
-            preprocessing_function=self.model_spec.preprocess_input
+            preprocessing_function=self.model_spec.preprocess_input,
         )
 
         if not self.val_generator:
@@ -178,7 +177,6 @@ class Trainer(object):
                     self.val_dataset_dir,
                     n_outputs=self.n_outputs,
                     batch_size=self.batch_size,
-                    custom_crop=self.custom_crop,
                     target_size=self.model_spec.target_size[:2],
                     class_mode='categorical',
                     shuffle=False
