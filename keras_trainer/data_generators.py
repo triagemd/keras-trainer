@@ -354,7 +354,7 @@ class EnhancedDirectoryIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
                  directory,
                  image_data_generator,
                  iterator_mode=None,
-                 custom_crops=False,
+                 custom_crop=False,
                  random_crop_size=None,
                  n_outputs=1,
                  target_size=(256, 256),
@@ -373,7 +373,7 @@ class EnhancedDirectoryIterator(EnhancedBatchFromFilesMixin, EnhancedIterator):
                  interpolation='nearest',
                  dtype='float32'):
         super(EnhancedDirectoryIterator, self).set_processing_attrs(image_data_generator,
-                                                                    custom_crops,
+                                                                    custom_crop,
                                                                     random_crop_size,
                                                                     n_outputs,
                                                                     target_size,

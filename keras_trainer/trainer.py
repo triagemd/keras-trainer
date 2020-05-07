@@ -30,6 +30,7 @@ class Trainer(object):
         'callback_list': {'type': list, 'default': []},
         'checkpoint_path': {'type': str, 'default': None},
         'class_weights': {'type': None, 'default': None},
+        'custom_crop': {'type': bool, 'default': False},
         'custom_model': {'type': None, 'default': None},
         'decay': {'type': float, 'default': 0.0005},
         'dropout_rate': {'type': float, 'default': 0.0},
@@ -127,6 +128,7 @@ class Trainer(object):
                     iterator_mode=self.iterator_mode,
                     n_outputs=self.n_outputs,
                     batch_size=self.batch_size,
+                    custom_crop=self.custom_crop,
                     target_size=self.model_spec.target_size[:2],
                     class_mode='categorical'
                 )
@@ -146,6 +148,7 @@ class Trainer(object):
                     batch_size=self.batch_size,
                     x_col="filename",
                     y_col="class_probabilities",
+                    custom_crop=self.custom_crop,
                     iterator_mode=self.iterator_mode,
                     n_outputs=self.n_outputs,
                     target_size=self.model_spec.target_size[:2],
@@ -175,6 +178,7 @@ class Trainer(object):
                     self.val_dataset_dir,
                     n_outputs=self.n_outputs,
                     batch_size=self.batch_size,
+                    custom_crop=self.custom_crop,
                     target_size=self.model_spec.target_size[:2],
                     class_mode='categorical',
                     shuffle=False
@@ -192,6 +196,7 @@ class Trainer(object):
                     self.val_dataset_dataframe,
                     directory=self.val_dataset_dir,
                     batch_size=self.batch_size,
+                    custom_crop=self.custom_crop,
                     x_col="filename",
                     y_col="class_probabilities",
                     n_outputs=self.n_outputs,
