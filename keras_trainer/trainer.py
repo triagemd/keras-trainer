@@ -30,6 +30,7 @@ class Trainer(object):
         'callback_list': {'type': list, 'default': []},
         'checkpoint_path': {'type': str, 'default': None},
         'class_weights': {'type': None, 'default': None},
+        'custom_crop': {'type': bool, 'default': False},
         'custom_model': {'type': None, 'default': None},
         'decay': {'type': float, 'default': 0.0005},
         'dropout_rate': {'type': float, 'default': 0.0},
@@ -105,6 +106,7 @@ class Trainer(object):
         print('Training data')  # To complement Keras message
 
         self.train_data_generator = self.train_data_generator or EnhancedImageDataGenerator(
+            custom_crop=self.custom_crop,
             random_crop_size=self.random_crop_size,
             rotation_range=180,
             width_shift_range=0,
@@ -162,7 +164,7 @@ class Trainer(object):
         print('Validation data')  # To complement Keras message
 
         self.val_data_generator = self.val_data_generator or EnhancedImageDataGenerator(
-            preprocessing_function=self.model_spec.preprocess_input
+            preprocessing_function=self.model_spec.preprocess_input,
         )
 
         if not self.val_generator:
