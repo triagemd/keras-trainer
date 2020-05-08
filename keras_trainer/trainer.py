@@ -106,6 +106,7 @@ class Trainer(object):
         print('Training data')  # To complement Keras message
 
         self.train_data_generator = self.train_data_generator or EnhancedImageDataGenerator(
+            custom_crop=self.custom_crop,
             random_crop_size=self.random_crop_size,
             rotation_range=180,
             width_shift_range=0,
@@ -147,7 +148,6 @@ class Trainer(object):
                     batch_size=self.batch_size,
                     x_col="filename",
                     y_col="class_probabilities",
-                    custom_crop=self.custom_crop,
                     iterator_mode=self.iterator_mode,
                     n_outputs=self.n_outputs,
                     target_size=self.model_spec.target_size[:2],
