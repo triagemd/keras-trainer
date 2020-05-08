@@ -194,7 +194,6 @@ class Trainer(object):
                     self.val_dataset_dataframe,
                     directory=self.val_dataset_dir,
                     batch_size=self.batch_size,
-                    custom_crop=self.custom_crop,
                     x_col="filename",
                     y_col="class_probabilities",
                     n_outputs=self.n_outputs,
