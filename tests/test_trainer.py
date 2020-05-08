@@ -62,6 +62,7 @@ def check_train_on_catdog_datasets(train_path, val_path, trainer_args={}, expect
                 'model_kwargs': {'alpha': 0.25},
                 'momentum': 0.9,
                 'num_gpus': 0,
+                'custom_crop': False,
                 'output_logs_dir': 'redacted',
                 'output_model_dir': 'redacted',
                 'track_sensitivity': False,
